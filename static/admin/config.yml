@@ -2,6 +2,13 @@
   name: git-gateway
   branch: main
 
+site_url: https://eugen-standard.netlify.app
+display_url: https://eugen-standard.netlify.app
+
+backend:
+  name: git-gateway
+  branch: main
+
 publish_mode: editorial_workflow
 
 media_folder: "static/uploads"
