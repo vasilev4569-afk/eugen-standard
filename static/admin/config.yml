@@ -14,6 +14,7 @@ collections:
   - name: "models_en_external_ssd"
     label: "Models (EN) External SSD"
     folder: "content/en/data/external-ssd"
+    filter: { field: "cms", value: true }
     create: true
     nested:
       depth: 3
