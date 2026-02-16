@@ -1,0 +1,43 @@
+﻿backend:
+  name: git-gateway
+  branch: main
+
+publish_mode: editorial_workflow
+
+media_folder: "static/uploads"
+public_folder: "/uploads"
+
+collections:
+  - name: "models_en_external_ssd"
+    label: "Models (EN) • External SSD"
+    folder: "content/en/data/external-ssd"
+    create: true
+    nested:
+      depth: 3
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Description", name: "description", widget: "string", required: false }
+
+      - label: "Params"
+        name: "params"
+        widget: "object"
+        fields:
+          - { label: "Category", name: "category", widget: "string", default: "external-ssd" }
+          - { label: "Brand", name: "brand", widget: "string" }
+          - { label: "Family", name: "family", widget: "string", required: false }
+          - { label: "Edition", name: "edition", widget: "string", required: false }
+
+      - label: "Specs"
+        name: "specs"
+        widget: "object"
+        required: false
+
+      - label: "Capacities"
+        name: "capacities"
+        widget: "list"
+        required: false
+        fields:
+          - { label: "Name", name: "name", widget: "string" }
+          - { label: "Capacity (GB)", name: "capacity_gb", widget: "number" }
+
+      - { label: "Body", name: "body", widget: "markdown", required: false }
