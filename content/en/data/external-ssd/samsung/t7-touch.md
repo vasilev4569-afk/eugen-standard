@@ -1,4 +1,5 @@
 ﻿---
+cms: true
 title: "Samsung T7 Touch"
 description: "Specs, capacities and overview of Samsung T7 Touch external SSD"
 params:
@@ -19,4 +20,6 @@ capacities:
   - name: "2TB"
     capacity_gb: 2000
 ---
+cms: true
 Samsung T7 Touch version with fingerprint security.
+

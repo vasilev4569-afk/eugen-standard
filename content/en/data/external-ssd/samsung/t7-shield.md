@@ -1,4 +1,5 @@
 ﻿---
+cms: true
 title: "Samsung T7 Shield"
 description: "Specs, capacities and overview of Samsung T7 Shield external SSD"
 params:
@@ -19,4 +20,6 @@ capacities:
   - name: "4TB"
     capacity_gb: 4000
 ---
+cms: true
 Samsung T7 Shield rugged version overview.
+
