@@ -5,10 +5,6 @@
 site_url: https://eugen-standard.netlify.app
 display_url: https://eugen-standard.netlify.app
 
-backend:
-  name: git-gateway
-  branch: main
-
 publish_mode: editorial_workflow
 
 media_folder: "static/uploads"
@@ -16,7 +12,7 @@ public_folder: "/uploads"
 
 collections:
   - name: "models_en_external_ssd"
-    label: "Models (EN) • External SSD"
+    label: "Models (EN) External SSD"
     folder: "content/en/data/external-ssd"
     create: true
     nested:
