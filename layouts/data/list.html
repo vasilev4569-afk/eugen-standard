@@ -1,0 +1,21 @@
+﻿{{ define "main" }}
+  <h1>{{ .Title }}</h1>
+  {{ if .Content }}<div>{{ .Content }}</div>{{ end }}
+
+  {{ $pages := .RegularPages }}
+  {{ if eq (len $pages) 0 }}
+    {{ $pages = .Pages }}
+  {{ end }}
+
+  {{ if gt (len $pages) 0 }}
+    <ul>
+      {{ range $pages.ByTitle }}
+        <li>
+          <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+        </li>
+      {{ end }}
+    </ul>
+  {{ else }}
+    <p>No items yet.</p>
+  {{ end }}
+{{ end }}

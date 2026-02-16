@@ -1,0 +1,24 @@
+﻿{{ define "main" }}
+  <article>
+    <h1>{{ .Title }}</h1>
+    {{ with .Description }}<p><em>{{ . }}</em></p>{{ end }}
+
+    {{ with .Params.specs }}
+      <h2>Specs</h2>
+      <table>
+        <tbody>
+          {{ range $k, $v := . }}
+            <tr>
+              <th style="text-align:left;padding-right:16px;">{{ $k }}</th>
+              <td>{{ $v }}</td>
+            </tr>
+          {{ end }}
+        </tbody>
+      </table>
+    {{ end }}
+
+    <div style="margin-top:16px;">
+      {{ .Content }}
+    </div>
+  </article>
+{{ end }}

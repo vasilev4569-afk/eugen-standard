@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Home on Eugen Standard</title>
+    <link>http://localhost:1313/en/</link>
+    <description>Recent content in Home on Eugen Standard</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <atom:link href="http://localhost:1313/en/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Samsung T7</title>
+      <link>http://localhost:1313/en/data/external-ssd/samsung/t7/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/en/data/external-ssd/samsung/t7/</guid>
+      <description>&lt;p&gt;Samsung T7 standard version overview.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Samsung T7 Resurrected</title>
+      <link>http://localhost:1313/en/data/external-ssd/samsung/t7-resurrected/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/en/data/external-ssd/samsung/t7-resurrected/</guid>
+      <description>&lt;p&gt;Samsung T7 Resurrected special edition overview.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Samsung T7 Shield</title>
+      <link>http://localhost:1313/en/data/external-ssd/samsung/t7-shield/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/en/data/external-ssd/samsung/t7-shield/</guid>
+      <description>&lt;p&gt;Samsung T7 Shield rugged version overview.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Samsung T7 Touch</title>
+      <link>http://localhost:1313/en/data/external-ssd/samsung/t7-touch/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/en/data/external-ssd/samsung/t7-touch/</guid>
+      <description>&lt;p&gt;Samsung T7 Touch version with fingerprint security.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

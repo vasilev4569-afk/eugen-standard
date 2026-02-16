@@ -1,0 +1,26 @@
+﻿<!doctype html>
+<html lang="{{ .Site.Language.Lang }}">
+<head>
+  {{ partial "head.html" . }}
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/{{ .Site.Language.Lang }}/">Home</a>
+      <a href="/{{ .Site.Language.Lang }}/data/">Data</a>
+      <a href="/{{ .Site.Language.Lang }}/methodology/">Methodology</a>
+      <a href="/{{ .Site.Language.Lang }}/calculators/">Calculator</a>
+      <a href="/{{ .Site.Language.Lang }}/reviews/">Reviews</a>
+      <a href="/{{ .Site.Language.Lang }}/best/">Best</a>
+    </nav>
+  </header>
+
+  <main>
+    {{ block "main" . }}{{ end }}
+  </main>
+
+  <footer>
+    <small>© {{ now.Format "2006" }} {{ .Site.Title }}</small>
+  </footer>
+</body>
+</html>
