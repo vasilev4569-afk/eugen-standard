@@ -4,15 +4,11 @@
     <header>
       <h1>{{ .Title }}</h1>
 
-      {{/*
-        Capacity switcher (robust):
-        Works correctly for bundle pages like .../t7/1tb/index.md
-        and does NOT create /1tb/1tb/ duplicates.
-      */}}
-      {{- $dir := strings.TrimSuffix "/" .File.Dir -}}      {{/* content/.../t7/1tb/ */}}
-      {{- $cap := path.Base $dir -}}                        {{/* 1tb */}}
-      {{- $seriesDir := path.Dir $dir -}}                   {{/* content/.../t7 */}}
-      {{- $base := printf "/%s/" $seriesDir | relLangURL -}} {{/* /en/.../t7/ */}}
+      {{/* Capacity switcher (robust) */}}
+      {{- $dir := strings.TrimSuffix "/" .File.Dir -}}
+      {{- $cap := path.Base $dir -}}
+      {{- $seriesDir := path.Dir $dir -}}
+      {{- $base := printf "/%s/" $seriesDir | relLangURL -}}
 
       {{- $isCapPage := or (eq $cap "500gb") (eq $cap "1tb") (eq $cap "2tb") -}}
       {{- if $isCapPage -}}
@@ -23,11 +19,9 @@
         </nav>
       {{- end -}}
 
-      {{/*
-        AUTO PHOTO (bundle resources):
-        1) Try match by folder/capacity name: 1tb.* / 500gb.* / 2tb.*
-        2) Fallback: first image in bundle (sorted by name)
-        Works only when page is a bundle (index.md in a folder).
+      {{/* AUTO PHOTO (bundle resources)
+           1) match by capacity name (1tb.* / 500gb.* / 2tb.*)
+           2) fallback: first image in bundle
       */}}
       {{- $img := .Resources.GetMatch (printf "%s.*" $cap) -}}
       {{- if not $img -}}
@@ -38,12 +32,13 @@
       {{- end -}}
 
       {{- if $img -}}
-        <figure class="unit-photo">
+        <figure class="unit-photo" style="margin: 16px 0 10px; max-width: 720px;">
           <img
             src="{{ $img.RelPermalink }}"
             alt="{{ .Title }} – test unit photo"
             loading="lazy"
-            decoding="async">
+            decoding="async"
+            style="display:block; width:100%; height:auto; border-radius:16px; box-shadow: 0 8px 24px rgba(0,0,0,.08);">
         </figure>
       {{- end -}}
 
