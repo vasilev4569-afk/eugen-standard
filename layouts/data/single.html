@@ -4,7 +4,7 @@
     <header>
       <h1>{{ .Title }}</h1>
 
-      {{/* Capacity switcher */}}
+      {{/* Capacity switcher for pages like .../t7/1tb/ */}}
       {{- $path := .RelPermalink -}}
       {{- $isCapPage := or (strings.HasSuffix $path "/500gb/") (strings.HasSuffix $path "/1tb/") (strings.HasSuffix $path "/2tb/") -}}
       {{- if $isCapPage -}}
@@ -16,27 +16,19 @@
         </nav>
       {{- end -}}
 
-      {{/* AUTO IMAGE:
-           If page is 1tb.md → try 1tb.jpg/png/webp
+      {{/* AUTO PHOTO FROM CONTENT (Page Bundle Resources):
+           Page: 1tb/index.md
+           Photo: 1tb.jpg/png/webp (same base name as page folder / capacity)
       */}}
-      {{- $basePath := .File.Dir -}}
-      {{- $name := .File.TranslationBaseName -}}
-
-      {{- $jpg := printf "%s%s.jpg" $basePath $name -}}
-      {{- $png := printf "%s%s.png" $basePath $name -}}
-      {{- $webp := printf "%s%s.webp" $basePath $name -}}
-
-      {{- if fileExists (printf "content/%s%s.jpg" $basePath $name) -}}
+      {{- $baseName := .File.TranslationBaseName -}}
+      {{- $img := .Resources.GetMatch (printf "%s.*" $baseName) -}}
+      {{- if $img -}}
         <figure class="unit-photo">
-          <img src="{{ printf "%s.jpg" $name | relURL }}" alt="{{ .Title }} – test unit photo" loading="lazy" decoding="async">
-        </figure>
-      {{- else if fileExists (printf "content/%s%s.png" $basePath $name) -}}
-        <figure class="unit-photo">
-          <img src="{{ printf "%s.png" $name | relURL }}" alt="{{ .Title }} – test unit photo" loading="lazy" decoding="async">
-        </figure>
-      {{- else if fileExists (printf "content/%s%s.webp" $basePath $name) -}}
-        <figure class="unit-photo">
-          <img src="{{ printf "%s.webp" $name | relURL }}" alt="{{ .Title }} – test unit photo" loading="lazy" decoding="async">
+          <img
+            src="{{ $img.RelPermalink }}"
+            alt="{{ .Title }} – test unit photo"
+            loading="lazy"
+            decoding="async">
         </figure>
       {{- end -}}
 
