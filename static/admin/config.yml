@@ -2,8 +2,8 @@
   name: github
   repo: vasilev4569-afk/eugen-standard
   branch: main
-  base_url: https://eugen.vasilev4569.workers.dev
   auth_endpoint: auth
+  base_url: https://eugen.vasilev4569.workers.dev
 
 site_url: https://eugen-standard.pages.dev
 display_url: https://eugen-standard.pages.dev

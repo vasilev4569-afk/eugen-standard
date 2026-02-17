@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>CMS Auth Callback</title>
+    <meta name="robots" content="noindex,nofollow" />
+  </head>
+  <body>
+    <script>
+      (async () => {
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const code = params.get("code");
+          if (!code) throw new Error("No code in callback URL");
+
+          // Берём токен у Worker'а
+          const tokenRes = await fetch("https://eugen.vasilev4569.workers.dev/token?code=" + encodeURIComponent(code), {
+            method: "GET",
+            headers: { "Accept": "application/json" },
+          });
+
+          const tokenData = await tokenRes.json();
+          if (!tokenData.access_token) throw new Error("No access_token. " + JSON.stringify(tokenData));
+
+          // ВАЖНО: эта страница на том же домене, что и Decap (/admin/),
+          // поэтому Decap примет postMessage.
+          window.opener.postMessage(
+            "authorization:github:success:" + tokenData.access_token,
+            window.location.origin
+          );
+          window.close();
+        } catch (e) {
+          document.body.innerText = "Auth error: " + (e && e.message ? e.message : e);
+        }
+      })();
+    </script>
+  </body>
+</html>
