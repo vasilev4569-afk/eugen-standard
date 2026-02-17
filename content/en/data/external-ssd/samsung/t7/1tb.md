@@ -1,9 +1,9 @@
 ﻿---
-cms: true
-title: "Samsung T7 1TB – Performance Data"
-description: "Measured performance data for Samsung T7 1TB external SSD (attempt tables + averages)."
-layout: "data"
+title: "Samsung T7 1TB – Raw Test Data"
+description: "Independent raw performance measurements for Samsung T7 1TB."
 ---
+
+
 
 {{< rawhtml >}}
 
