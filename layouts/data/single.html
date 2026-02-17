@@ -1,24 +1,23 @@
 ﻿{{ define "main" }}
+<main class="container">
   <article>
-    <h1>{{ .Title }}</h1>
-    {{ with .Description }}<p><em>{{ . }}</em></p>{{ end }}
+    <header>
+      <h1>{{ .Title }}</h1>
 
-    {{ with .Params.specs }}
-      <h2>Specs</h2>
-      <table>
-        <tbody>
-          {{ range $k, $v := . }}
-            <tr>
-              <th style="text-align:left;padding-right:16px;">{{ $k }}</th>
-              <td>{{ $v }}</td>
-            </tr>
-          {{ end }}
-        </tbody>
-      </table>
-    {{ end }}
+      {{ with .Params.description }}
+        <p class="lead">{{ . }}</p>
+      {{ end }}
+    </header>
 
-    <div style="margin-top:16px;">
+    <section class="content">
       {{ .Content }}
-    </div>
+    </section>
+
+    <footer class="meta">
+      {{ with .Lastmod }}
+        <p class="small">Last updated: {{ .Format "2006-01-02" }}</p>
+      {{ end }}
+    </footer>
   </article>
+</main>
 {{ end }}

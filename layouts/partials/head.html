@@ -4,18 +4,28 @@
 <link rel="stylesheet" href="/css/site.css">
 
 <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} | {{ .Site.Title }}{{ end }}</title>
-{{ with .Description }}<meta name="description" content="{{ . }}">{{ end }}
+
+{{ $desc := or .Params.description .Description .Summary }}
+{{ with $desc }}
+<meta name="description" content="{{ . | plainify }}">
+{{ end }}
 
 <link rel="canonical" href="{{ .Permalink }}">
 
 {{ if .IsTranslated }}
-  {{ range .AllTranslations }}
-    <link rel="alternate" hreflang="{{ .Site.Language.Lang }}" href="{{ .Permalink }}">
+  <link rel="alternate" hreflang="{{ .Lang }}" href="{{ .Permalink }}">
+  {{ range .Translations }}
+    <link rel="alternate" hreflang="{{ .Lang }}" href="{{ .Permalink }}">
   {{ end }}
-  <link rel="alternate" hreflang="x-default" href="{{ (index .AllTranslations 0).Permalink }}">
+  <link rel="alternate" hreflang="x-default" href="{{ (index (where .AllTranslations "Lang" "en") 0).Permalink | default .Permalink }}">
+{{ else }}
+  <link rel="alternate" hreflang="{{ .Lang }}" href="{{ .Permalink }}">
+  <link rel="alternate" hreflang="x-default" href="{{ .Permalink }}">
 {{ end }}
 
 <meta property="og:type" content="{{ if .IsHome }}website{{ else }}article{{ end }}">
 <meta property="og:title" content="{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }}{{ end }}">
-{{ with .Description }}<meta property="og:description" content="{{ . }}">{{ end }}
+{{ with $desc }}
+<meta property="og:description" content="{{ . | plainify }}">
+{{ end }}
 <meta property="og:url" content="{{ .Permalink }}">
