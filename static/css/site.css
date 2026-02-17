@@ -2,3 +2,10 @@
 nav a{margin-right:10px}
 table{border-collapse:collapse;margin-top:8px}
 th,td{border-bottom:1px solid #eee;padding:8px 0;vertical-align:top}
+.cap-switch{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 18px; }
+.cap-btn{
+  display:inline-block; padding:8px 12px; border:1px solid #ddd; border-radius:10px;
+  text-decoration:none; background:#fafafa; color:#111;
+}
+.cap-btn.is-active{ background:#111; color:#fff; border-color:#111; }
+

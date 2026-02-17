@@ -3,6 +3,19 @@
   <article>
     <header>
       <h1>{{ .Title }}</h1>
+	  
+	  {{/* Capacity switcher for pages like .../t7/1tb/ */}}
+{{- $path := .RelPermalink -}}
+{{- $isCapPage := or (strings.HasSuffix $path "/500gb/") (strings.HasSuffix $path "/1tb/") (strings.HasSuffix $path "/2tb/") -}}
+{{- if $isCapPage -}}
+  {{- $base := $path | replaceRE "/(500gb|1tb|2tb)/$" "/" -}}
+  <nav class="cap-switch" aria-label="Capacity switch">
+    <a class="cap-btn {{ if strings.HasSuffix $path "/500gb/" }}is-active{{ end }}" href="{{ $base }}500gb/">500GB</a>
+    <a class="cap-btn {{ if strings.HasSuffix $path "/1tb/" }}is-active{{ end }}" href="{{ $base }}1tb/">1TB</a>
+    <a class="cap-btn {{ if strings.HasSuffix $path "/2tb/" }}is-active{{ end }}" href="{{ $base }}2tb/">2TB</a>
+  </nav>
+{{- end -}}
+
 
       {{ with .Params.description }}
         <p class="lead">{{ . }}</p>
