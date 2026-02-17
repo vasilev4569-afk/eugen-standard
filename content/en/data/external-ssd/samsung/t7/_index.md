@@ -1,7 +1,12 @@
 ﻿---
 cms: true
-title: "Samsung T7 – Series"
+title: "Samsung T7"
 description: "Samsung T7 series overview and links to capacity-specific performance data pages."
+layout: "data"
+params:
+  category: "external-ssd"
+  brand: "Samsung"
+  family: "T7"
 ---
 
 ## Capacity-specific data pages
