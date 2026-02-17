@@ -1,9 +1,11 @@
 ﻿backend:
-  name: git-gateway
+  name: github
+  repo: vasilev4569-afk/eugen-standard
   branch: main
+  auth_endpoint: https://YOUR-AUTH-DOMAIN.tld/auth
 
-site_url: https://eugen-standard.netlify.app
-display_url: https://eugen-standard.netlify.app
+site_url: https://eugen-standard.pages.dev
+display_url: https://eugen-standard.pages.dev
 
 publish_mode: editorial_workflow
 
@@ -15,6 +17,7 @@ collections:
     label: "Models (EN) External SSD"
     folder: "content/en/data/external-ssd"
     create: true
+
     nested:
       depth: 3
 
@@ -49,4 +52,3 @@ collections:
           - { label: "Capacity (GB)", name: "capacity_gb", widget: "number" }
 
       - { label: "Body", name: "body", widget: "markdown", required: false }
-
