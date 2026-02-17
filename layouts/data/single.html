@@ -16,12 +16,17 @@
         </nav>
       {{- end -}}
 
-      {{/* ONE photo on top (front) */}}
-      {{- with .Params.unit_photos.front -}}
+      {{/* ONE photo on top:
+           If the page is a bundle and contains ANY image resource,
+           show the first one (sorted by name).
+      */}}
+      {{- $imgs := .Resources.ByType "image" -}}
+      {{- if gt (len $imgs) 0 -}}
+        {{- $img := index (sort $imgs "Name" "asc") 0 -}}
         <figure class="unit-photo">
           <img
-            src="{{ . | relURL }}"
-            alt="{{ $.Title }} – test unit photo"
+            src="{{ $img.RelPermalink }}"
+            alt="{{ .Title }} – test unit photo"
             loading="lazy"
             decoding="async">
         </figure>
