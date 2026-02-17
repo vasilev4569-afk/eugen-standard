@@ -2,7 +2,7 @@
   name: github
   repo: vasilev4569-afk/eugen-standard
   branch: main
-  auth_endpoint: https://YOUR-AUTH-DOMAIN.tld/auth
+  auth_endpoint: https://eugen.vasilev4569.workers.dev/auth
 
 site_url: https://eugen-standard.pages.dev
 display_url: https://eugen-standard.pages.dev
