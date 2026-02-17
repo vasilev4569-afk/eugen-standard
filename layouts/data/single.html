@@ -4,24 +4,39 @@
     <header>
       <h1>{{ .Title }}</h1>
 
-      {{/* Capacity switcher for pages like .../t7/1tb/ */}}
-      {{- $path := .RelPermalink -}}
-      {{- $isCapPage := or (strings.HasSuffix $path "/500gb/") (strings.HasSuffix $path "/1tb/") (strings.HasSuffix $path "/2tb/") -}}
+      {{/*
+        Capacity switcher (robust):
+        Works correctly for bundle pages like .../t7/1tb/index.md
+        and does NOT create /1tb/1tb/ duplicates.
+      */}}
+      {{- $dir := strings.TrimSuffix "/" .File.Dir -}}      {{/* content/.../t7/1tb/ */}}
+      {{- $cap := path.Base $dir -}}                        {{/* 1tb */}}
+      {{- $seriesDir := path.Dir $dir -}}                   {{/* content/.../t7 */}}
+      {{- $base := printf "/%s/" $seriesDir | relLangURL -}} {{/* /en/.../t7/ */}}
+
+      {{- $isCapPage := or (eq $cap "500gb") (eq $cap "1tb") (eq $cap "2tb") -}}
       {{- if $isCapPage -}}
-        {{- $base := $path | replaceRE "/(500gb|1tb|2tb)/$" "/" -}}
         <nav class="cap-switch" aria-label="Capacity switch">
-          <a class="cap-btn {{ if strings.HasSuffix $path "/500gb/" }}is-active{{ end }}" href="{{ $base }}500gb/">500GB</a>
-          <a class="cap-btn {{ if strings.HasSuffix $path "/1tb/" }}is-active{{ end }}" href="{{ $base }}1tb/">1TB</a>
-          <a class="cap-btn {{ if strings.HasSuffix $path "/2tb/" }}is-active{{ end }}" href="{{ $base }}2tb/">2TB</a>
+          <a class="cap-btn {{ if eq $cap "500gb" }}is-active{{ end }}" href="{{ $base }}500gb/">500GB</a>
+          <a class="cap-btn {{ if eq $cap "1tb" }}is-active{{ end }}" href="{{ $base }}1tb/">1TB</a>
+          <a class="cap-btn {{ if eq $cap "2tb" }}is-active{{ end }}" href="{{ $base }}2tb/">2TB</a>
         </nav>
       {{- end -}}
 
-      {{/* AUTO PHOTO FROM CONTENT (Page Bundle Resources):
-           Page: 1tb/index.md
-           Photo: 1tb.jpg/png/webp (same base name as page folder / capacity)
+      {{/*
+        AUTO PHOTO (bundle resources):
+        1) Try match by folder/capacity name: 1tb.* / 500gb.* / 2tb.*
+        2) Fallback: first image in bundle (sorted by name)
+        Works only when page is a bundle (index.md in a folder).
       */}}
-      {{- $baseName := .File.TranslationBaseName -}}
-      {{- $img := .Resources.GetMatch (printf "%s.*" $baseName) -}}
+      {{- $img := .Resources.GetMatch (printf "%s.*" $cap) -}}
+      {{- if not $img -}}
+        {{- $imgs := .Resources.ByType "image" -}}
+        {{- if gt (len $imgs) 0 -}}
+          {{- $img = index (sort $imgs "Name" "asc") 0 -}}
+        {{- end -}}
+      {{- end -}}
+
       {{- if $img -}}
         <figure class="unit-photo">
           <img
