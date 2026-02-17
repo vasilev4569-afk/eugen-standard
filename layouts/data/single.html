@@ -4,7 +4,7 @@
     <header>
       <h1>{{ .Title }}</h1>
 
-      {{/* Capacity switcher (robust) */}}
+      {{/* Capacity switcher */}}
       {{- $dir := strings.TrimSuffix "/" .File.Dir -}}
       {{- $cap := path.Base $dir -}}
       {{- $seriesDir := path.Dir $dir -}}
@@ -19,10 +19,7 @@
         </nav>
       {{- end -}}
 
-      {{/* AUTO PHOTO (bundle resources)
-           1) match by capacity name (1tb.* / 500gb.* / 2tb.*)
-           2) fallback: first image in bundle
-      */}}
+      {{/* AUTO PHOTO */}}
       {{- $img := .Resources.GetMatch (printf "%s.*" $cap) -}}
       {{- if not $img -}}
         {{- $imgs := .Resources.ByType "image" -}}
@@ -32,13 +29,13 @@
       {{- end -}}
 
       {{- if $img -}}
-        <figure class="unit-photo" style="margin: 16px 0 10px; max-width: 720px;">
+        <figure class="unit-photo" style="margin:16px auto; text-align:center;">
           <img
             src="{{ $img.RelPermalink }}"
             alt="{{ .Title }} – test unit photo"
             loading="lazy"
             decoding="async"
-            style="display:block; width:100%; height:auto; border-radius:16px; box-shadow: 0 8px 24px rgba(0,0,0,.08);">
+            style="display:block; margin:0 auto; max-width:100%; height:auto; border-radius:16px;">
         </figure>
       {{- end -}}
 
