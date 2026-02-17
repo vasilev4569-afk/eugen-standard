@@ -4,5 +4,5 @@ title: test
 description: описание
 params:
   category: external-ssd
-  brand: samsung
+  brand: Samsung
 ---
