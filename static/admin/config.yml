@@ -3,6 +3,7 @@
   repo: vasilev4569-afk/eugen-standard
   branch: main
   auth_endpoint: https://eugen.vasilev4569.workers.dev/auth
+  base_url: https://eugen.vasilev4569.workers.dev
 
 site_url: https://eugen-standard.pages.dev
 display_url: https://eugen-standard.pages.dev
