@@ -18,3 +18,8 @@ defaultContentLanguageInSubdir = true
     languageName = "Francais"
     weight = 3
     contentDir = "content/fr"
+	
+	[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
