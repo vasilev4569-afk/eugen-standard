@@ -2,17 +2,16 @@
   <h1>{{ .Title }}</h1>
   {{ if .Content }}<div>{{ .Content }}</div>{{ end }}
 
+  {{ $sections := .Sections }}
   {{ $pages := .RegularPages }}
-  {{ if eq (len $pages) 0 }}
-    {{ $pages = .Pages }}
-  {{ end }}
 
-  {{ if gt (len $pages) 0 }}
+  {{ if or (gt (len $sections) 0) (gt (len $pages) 0) }}
     <ul>
+      {{ range $sections.ByTitle }}
+        <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+      {{ end }}
       {{ range $pages.ByTitle }}
-        <li>
-          <a href="{{ .RelPermalink }}">{{ .Title }}</a>
-        </li>
+        <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
       {{ end }}
     </ul>
   {{ else }}
