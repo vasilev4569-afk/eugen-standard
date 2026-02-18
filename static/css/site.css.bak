@@ -158,23 +158,6 @@ th, td{
   white-space:nowrap;
 }
 
-/* --- IMPORTANT: keep identical column boundaries across ALL data tables --- */
-.data-table{
-  table-layout:fixed; /* стабилизирует колонки между разными таблицами */
-}
-
-/* Фиксируем ширины первых двух колонок, чтобы вертикальная линия была ровной */
-.data-table th:first-child,
-.data-table td:first-child{
-  width:260px;
-}
-
-.data-table th:nth-child(2),
-.data-table td:nth-child(2){
-  width:210px;
-}
-
-/* остальные колонки равномерно займут остаток */
 .data-table td:not(:first-child),
 .data-table th:not(:first-child){
   text-align:center;
@@ -193,7 +176,8 @@ th, td{
 
 /* =========================================================
    Test unit grid (table left + photo right)
-   Goal: top and bottom edges align with the table (desktop).
+   Цель: верх и  совпадают с таблицей.
+   елается через фикс высоты строк таблицы (6 строк).
    ========================================================= */
 
 .testunit-grid{
@@ -204,13 +188,13 @@ th, td{
   margin:16px 0 22px;
 }
 
-/* remove table margins inside block (important because content has inline <style>) */
+/* бираем внешние отступы у таблицы внутри блока (важно из-за inline <style> в контенте) */
 .testunit-left .meta-table{
   margin-top:0 !important;
   margin-bottom:0 !important;
 }
 
-/* Fix row height so the table height is predictable (6 rows) */
+/* Фиксируем высоту строк, чтобы таблица имела предсказуемую высоту */
 .testunit-left .meta-table tr{
   height:52px !important;
 }
@@ -220,17 +204,17 @@ th, td{
   line-height:1.25 !important;
 }
 
-/* Photo card height ~= table height */
+/* ысота фото-карты = высота таблицы (6*52=312 + границы ≈ 314) */
 .testunit-photo{
   margin:0;
   width:100%;
   border:1px solid var(--border);
   border-radius:var(--radius);
-  background:transparent;
+  background:transparent;     /* <-- серого фона Т */
   padding:0;
   overflow:hidden;
 
-  height:314px;
+  height:314px;              /* ключ */
   display:flex;
   align-items:center;
   justify-content:center;
@@ -249,16 +233,18 @@ th, td{
    Responsive
    ========================================================= */
 
-/* tablet and below — stack columns and disable fixed table height */
+/* а планшете/меньше — складываем в колонку и отключаем "фикс высоты" */
 @media (max-width: 1100px){
   .testunit-grid{
     grid-template-columns: 1fr;
   }
 
+  /* Таблицу возвращаем к естественной высоте */
   .testunit-left .meta-table tr{
     height:auto !important;
   }
 
+  /* Фото становится нормальным блоком */
   .testunit-photo{
     height:260px;
   }
@@ -297,16 +283,6 @@ th, td{
 /* Hide attempts only under 576px:
    columns order: Metric | Average(Median) | Attempt1 | Attempt2 | Attempt3 */
 @media (max-width: 576px){
-  /* на мобилке вернём авто-раскладку, чтобы ничего не выпирало */
-  .data-table{ table-layout:auto; }
-
-  .data-table th:first-child,
-  .data-table td:first-child,
-  .data-table th:nth-child(2),
-  .data-table td:nth-child(2){
-    width:auto;
-  }
-
   .data-table th:nth-child(n+3),
   .data-table td:nth-child(n+3){
     display:none;
