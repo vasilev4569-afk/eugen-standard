@@ -1,16 +1,19 @@
-﻿/* === Base === */
+﻿/* =========================
+   Eugen Standard — site.css
+   Clean single-source CSS
+   ========================= */
+
 :root{
   --bg:#ffffff;
   --text:#111111;
   --muted:#6b7280;
   --border:#e5e7eb;
-  --card:#fafafa;
-  --brand:#111111;
+  --soft:#f6f6f6;
   --radius:16px;
 }
 
 *{ box-sizing:border-box; }
-html,body{ height:100%; }
+
 body{
   margin:0;
   font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
@@ -19,14 +22,11 @@ body{
   color:var(--text);
 }
 
-/* Media */
-img,video{ max-width:100%; height:auto; display:block; }
+img{ max-width:100%; height:auto; display:block; }
 
-/* Links */
 a{ color:inherit; text-decoration:none; }
 a:hover{ text-decoration:underline; }
 
-/* === Layout === */
 .container{
   max-width:1200px;
   margin:0 auto;
@@ -37,16 +37,15 @@ a:hover{ text-decoration:underline; }
   padding:24px 0 56px;
 }
 
-.text{
-  max-width:760px;
-}
+.small{ font-size:13px; }
+.muted{ color:var(--muted); }
 
-/* === Header === */
+/* ===== Header / Nav ===== */
 .site-header{
   position:sticky;
   top:0;
   z-index:10;
-  background:rgba(255,255,255,.95);
+  background:rgba(255,255,255,.92);
   backdrop-filter:saturate(180%) blur(8px);
   border-bottom:1px solid var(--border);
 }
@@ -66,22 +65,22 @@ a:hover{ text-decoration:underline; }
 
 .topnav{
   display:flex;
+  flex-wrap:wrap;
   gap:12px;
 }
 
 .topnav a{
   padding:8px 10px;
   border-radius:10px;
-  font-size:14px;
   white-space:nowrap;
 }
 
 .topnav a:hover{
-  background:var(--card);
+  background:#fafafa;
   text-decoration:none;
 }
 
-/* === Footer === */
+/* ===== Footer ===== */
 .site-footer{
   border-top:1px solid var(--border);
   padding:20px 0;
@@ -101,112 +100,161 @@ a:hover{ text-decoration:underline; }
   flex-wrap:wrap;
 }
 
-.footnav a{
-  color:var(--muted);
-}
+.footnav a{ color:var(--muted); }
 
-.muted{ color:var(--muted); }
-
-/* === Typography === */
+/* ===== Typography ===== */
 h1,h2,h3{ line-height:1.2; margin:0 0 12px; }
 h1{ font-size:32px; letter-spacing:-.2px; }
 p{ margin:0 0 12px; }
-.lead{ font-size:18px; color:var(--muted); margin-top:8px; }
-.small{ font-size:13px; }
 
-/* === Data page === */
-.data-page{ padding-top:6px; }
-.page-header{ margin-bottom:16px; }
-
-.unit-photo{
-  margin:16px 0 0;
-  border-radius:var(--radius);
-  overflow:hidden;
-  background:var(--card);
-  border:1px solid var(--border);
+.lead{
+  font-size:18px;
+  color:var(--muted);
+  margin-top:8px;
+  max-width:none;
 }
 
-.unit-photo-img{
-  width:100%;
-  height:420px;
-  object-fit:cover;
-  object-position:center;
+/* ===== Capacity switch ===== */
+.cap-switch{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 18px; }
+.cap-btn{
+  display:inline-block; padding:8px 12px;
+  border:1px solid #ddd; border-radius:10px;
+  background:#fafafa; color:#111;
 }
+.cap-btn.is-active{ background:#111; color:#fff; border-color:#111; }
 
-/* === Content === */
-.content{ margin-top:16px; }
+/* =========================================================
+   TABLES
+   ========================================================= */
 
-/* === Tables (global inside content) === */
-/* We enforce a stable first column width and consistent alignment */
-.content table{
+table{
   width:100%;
   border-collapse:collapse;
   margin-top:12px;
-  font-size:14px;
-  table-layout:fixed;           /* ключ: фиксируем сетку колонок */
 }
 
-.content th,
-.content td{
-  border-bottom:1px solid var(--border);
-  padding:10px 10px;
-  vertical-align:top;
+/* перенос только по пробелам */
+th, td{
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+
+.meta-table th, .meta-table td,
+.data-table th, .data-table td{
+  border:1px solid #e1e1e1;
+  padding:10px;
   text-align:left;
-  overflow-wrap:anywhere;       /* длинные значения (serial/firmware) не ломают таблицу */
-  word-break:normal;
+  vertical-align:top;
 }
 
-.content th{
+.meta-table th, .data-table th{
+  background:var(--soft);
   font-weight:600;
-  background:#fff;
 }
 
-/* Fixed first column (Metric / field name) */
-.content th:first-child,
-.content td:first-child{
-  width: 280px;                 /* фикс ширины 1 столбца */
-  font-weight:600;
-  color:#111;
+.meta-table th{
+  width:240px;
+  white-space:nowrap;
 }
 
-/* Make numeric columns feel cleaner */
-.content td:not(:first-child){
+.data-table td:not(:first-child),
+.data-table th:not(:first-child){
+  text-align:center;
   font-variant-numeric: tabular-nums;
 }
 
-/* Slight hover help on desktop */
+/* hover строк */
 @media (hover:hover){
-  .content tr:hover td{ background:#fcfcfc; }
+  table tbody tr:hover td,
+  table tbody tr:hover th{
+    background:#fcfcfc;
+  }
 }
 
-/* If a table is still wider than viewport, allow scrolling (fallback) */
-.table-wrapper{
-  overflow-x:auto;
-  -webkit-overflow-scrolling:touch;
+.kpi{ font-weight:700; }
+
+/* =========================================================
+   Test unit grid (table left + photo right)
+   Цель: верх и  совпадают с таблицей.
+   елается через фикс высоты строк таблицы (6 строк).
+   ========================================================= */
+
+.testunit-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:24px;
+  align-items:start;
+  margin:16px 0 22px;
 }
 
-/* Capacity switch */
-.cap-switch{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 18px; }
-
-.cap-btn{
-  display:inline-block;
-  padding:8px 12px;
-  border:1px solid #ddd;
-  border-radius:10px;
-  background:#fafafa;
-  font-size:14px;
+/* бираем внешние отступы у таблицы внутри блока (важно из-за inline <style> в контенте) */
+.testunit-left .meta-table{
+  margin-top:0 !important;
+  margin-bottom:0 !important;
 }
 
-.cap-btn.is-active{
-  background:#111;
-  color:#fff;
-  border-color:#111;
+/* Фиксируем высоту строк, чтобы таблица имела предсказуемую высоту */
+.testunit-left .meta-table tr{
+  height:52px !important;
+}
+.testunit-left .meta-table th,
+.testunit-left .meta-table td{
+  padding:10px !important;
+  line-height:1.25 !important;
 }
 
-/* === Mobile === */
+/* ысота фото-карты = высота таблицы (6*52=312 + границы ≈ 314) */
+.testunit-photo{
+  margin:0;
+  width:100%;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  background:transparent;     /* <-- серого фона Т */
+  padding:0;
+  overflow:hidden;
+
+  height:314px;              /* ключ */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.testunit-photo-img{
+  max-width:100%;
+  max-height:100%;
+  width:auto;
+  height:auto;
+  object-fit:contain;
+  object-position:center;
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+/* а планшете/меньше — складываем в колонку и отключаем "фикс высоты" */
+@media (max-width: 1100px){
+  .testunit-grid{
+    grid-template-columns: 1fr;
+  }
+
+  /* Таблицу возвращаем к естественной высоте */
+  .testunit-left .meta-table tr{
+    height:auto !important;
+  }
+
+  /* Фото становится нормальным блоком */
+  .testunit-photo{
+    height:260px;
+  }
+}
+
+/* Mobile base */
 @media (max-width: 768px){
-
   .container{ padding:0 16px; }
+  h1{ font-size:24px; }
+  .lead{ font-size:16px; }
 
   .header-inner{
     flex-direction:column;
@@ -221,14 +269,7 @@ p{ margin:0 0 12px; }
     padding-bottom:6px;
   }
 
-  .topnav a{
-    font-size:13px;
-    padding:6px 8px;
-  }
-
-  h1{ font-size:24px; }
-  .lead{ font-size:16px; }
-  .unit-photo-img{ height:260px; }
+  .topnav a{ padding:6px 8px; }
 
   .footer-inner{
     flex-direction:column;
@@ -236,16 +277,27 @@ p{ margin:0 0 12px; }
     gap:10px;
   }
 
-  /* On mobile, first column a bit narrower */
-  .content th:first-child,
-  .content td:first-child{
-    width: 190px;
+  .meta-table th{ width:180px; }
+}
+
+/* Hide attempts only under 576px:
+   columns order: Metric | Average(Median) | Attempt1 | Attempt2 | Attempt3 */
+@media (max-width: 576px){
+  .data-table th:nth-child(n+3),
+  .data-table td:nth-child(n+3){
+    display:none;
   }
 
-  /* Slightly tighter table padding on mobile */
-  .content th,
-  .content td{
-    padding:8px 8px;
-    font-size:13px;
+  .data-table th:nth-child(2),
+  .data-table td:nth-child(2){
+    text-align:right;
+    font-weight:700;
+  }
+}
+
+@media (min-width: 577px){
+  .data-table th:nth-child(n+3),
+  .data-table td:nth-child(n+3){
+    display:table-cell;
   }
 }

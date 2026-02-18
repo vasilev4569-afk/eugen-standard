@@ -1,52 +1,80 @@
 ﻿{{ define "main" }}
+
+{{ $imgs := .Resources.ByType "image" }}
+{{ $img := "" }}
+{{ if gt (len $imgs) 0 }}
+  {{ $img = index (sort $imgs "Name" "asc") 0 }}
+{{ end }}
+
+{{ $c := .Content }}
+{{ $pattern := `(?s)^(.*?)(<h2>Test unit & environment</h2>\s*<table class="meta-table".*?</table>)(.*)$` }}
+{{ $hasTestUnit := and (in $c "meta-table") (in $c "Test unit & environment") }}
+
 <article class="data-page">
+
   <header class="page-header">
-    <div class="text">
-      <h1>{{ .Title }}</h1>
+    <h1>{{ .Title }}</h1>
 
-      {{/* Capacity switcher */}}
-      {{- $dir := strings.TrimSuffix "/" .File.Dir -}}
-      {{- $cap := path.Base $dir -}}
-      {{- $seriesDir := path.Dir $dir -}}
-      {{- $base := printf "/%s/" $seriesDir | relLangURL -}}
+    {{ $dir := strings.TrimSuffix "/" .File.Dir }}
+    {{ $cap := path.Base $dir }}
+    {{ $seriesDir := path.Dir $dir }}
+    {{ $base := printf "/%s/" $seriesDir | relLangURL }}
 
-      {{- $isCapPage := or (eq $cap "500gb") (eq $cap "1tb") (eq $cap "2tb") -}}
-      {{- if $isCapPage -}}
-        <nav class="cap-switch" aria-label="Capacity switch">
-          <a class="cap-btn {{ if eq $cap "500gb" }}is-active{{ end }}" href="{{ $base }}500gb/">500GB</a>
-          <a class="cap-btn {{ if eq $cap "1tb" }}is-active{{ end }}" href="{{ $base }}1tb/">1TB</a>
-          <a class="cap-btn {{ if eq $cap "2tb" }}is-active{{ end }}" href="{{ $base }}2tb/">2TB</a>
-        </nav>
-      {{- end -}}
+    {{ $isCapPage := or (eq $cap "500gb") (eq $cap "1tb") (eq $cap "2tb") }}
+    {{ if $isCapPage }}
+      <nav class="cap-switch" aria-label="Capacity switch">
+        <a class="cap-btn {{ if eq $cap "500gb" }}is-active{{ end }}" href="{{ $base }}500gb/">500GB</a>
+        <a class="cap-btn {{ if eq $cap "1tb" }}is-active{{ end }}" href="{{ $base }}1tb/">1TB</a>
+        <a class="cap-btn {{ if eq $cap "2tb" }}is-active{{ end }}" href="{{ $base }}2tb/">2TB</a>
+      </nav>
+    {{ end }}
 
-      {{ with .Params.description }}
-        <p class="lead">{{ . }}</p>
-      {{ end }}
-    </div>
-
-    {{/* AUTO PHOTO */}}
-    {{- $img := .Resources.GetMatch (printf "%s.*" $cap) -}}
-    {{- if not $img -}}
-      {{- $imgs := .Resources.ByType "image" -}}
-      {{- if gt (len $imgs) 0 -}}
-        {{- $img = index (sort $imgs "Name" "asc") 0 -}}
-      {{- end -}}
-    {{- end -}}
-
-    {{- if $img -}}
-      <figure class="unit-photo">
-        <img
-          class="unit-photo-img"
-          src="{{ $img.RelPermalink }}"
-          alt="{{ .Title }} – test unit photo"
-          loading="lazy"
-          decoding="async">
-      </figure>
-    {{- end -}}
+    {{ with .Params.description }}
+      <p class="lead">{{ . }}</p>
+    {{ end }}
   </header>
 
   <section class="content">
-    {{ .Content }}
+
+    {{ if and $hasTestUnit $img }}
+
+      {{ $before := replaceRE $pattern "$1" $c }}
+      {{ $block  := replaceRE $pattern "$2" $c }}
+      {{ $after  := replaceRE $pattern "$3" $c }}
+
+      {{/* split block into H2 (full width) and table (left column only) */}}
+      {{ $h2 := replaceRE `(?s)^((?:<h2>.*?</h2>)).*` "$1" $block }}
+      {{ $table := replaceRE `(?s)^<h2>.*?</h2>\s*` "" $block }}
+
+      {{ $before | safeHTML }}
+
+      {{ $h2 | safeHTML }}
+
+      <div class="testunit-grid">
+        <div class="testunit-left">
+          {{ $table | safeHTML }}
+        </div>
+
+        <div class="testunit-right">
+          <figure class="testunit-photo">
+            <img
+              class="testunit-photo-img"
+              src="{{ $img.RelPermalink }}"
+              alt="{{ .Title }} - test unit photo"
+              loading="lazy"
+              decoding="async">
+          </figure>
+        </div>
+      </div>
+
+      {{ $after | safeHTML }}
+
+    {{ else }}
+
+      {{ .Content }}
+
+    {{ end }}
+
   </section>
 
   <footer class="meta">
@@ -54,5 +82,7 @@
       <p class="small muted">Last updated: {{ .Format "2006-01-02" }}</p>
     {{ end }}
   </footer>
+
 </article>
+
 {{ end }}
