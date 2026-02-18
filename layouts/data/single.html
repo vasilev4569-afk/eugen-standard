@@ -1,7 +1,7 @@
 ﻿{{ define "main" }}
-<main class="container">
-  <article>
-    <header>
+<article class="data-page">
+  <header class="page-header">
+    <div class="text">
       <h1>{{ .Title }}</h1>
 
       {{/* Capacity switcher */}}
@@ -19,40 +19,40 @@
         </nav>
       {{- end -}}
 
-      {{/* AUTO PHOTO */}}
-      {{- $img := .Resources.GetMatch (printf "%s.*" $cap) -}}
-      {{- if not $img -}}
-        {{- $imgs := .Resources.ByType "image" -}}
-        {{- if gt (len $imgs) 0 -}}
-          {{- $img = index (sort $imgs "Name" "asc") 0 -}}
-        {{- end -}}
-      {{- end -}}
-
-      {{- if $img -}}
-        <figure class="unit-photo" style="margin:16px auto; text-align:center;">
-          <img
-            src="{{ $img.RelPermalink }}"
-            alt="{{ .Title }} – test unit photo"
-            loading="lazy"
-            decoding="async"
-            style="display:block; margin:0 auto; max-width:100%; height:420px; object-fit:cover; object-position:center; border-radius:16px;">
-        </figure>
-      {{- end -}}
-
       {{ with .Params.description }}
         <p class="lead">{{ . }}</p>
       {{ end }}
-    </header>
+    </div>
 
-    <section class="content">
-      {{ .Content }}
-    </section>
+    {{/* AUTO PHOTO */}}
+    {{- $img := .Resources.GetMatch (printf "%s.*" $cap) -}}
+    {{- if not $img -}}
+      {{- $imgs := .Resources.ByType "image" -}}
+      {{- if gt (len $imgs) 0 -}}
+        {{- $img = index (sort $imgs "Name" "asc") 0 -}}
+      {{- end -}}
+    {{- end -}}
 
-    <footer class="meta">
-      {{ with .Lastmod }}
-        <p class="small">Last updated: {{ .Format "2006-01-02" }}</p>
-      {{ end }}
-    </footer>
-  </article>
-</main>
+    {{- if $img -}}
+      <figure class="unit-photo">
+        <img
+          class="unit-photo-img"
+          src="{{ $img.RelPermalink }}"
+          alt="{{ .Title }} – test unit photo"
+          loading="lazy"
+          decoding="async">
+      </figure>
+    {{- end -}}
+  </header>
+
+  <section class="content">
+    {{ .Content }}
+  </section>
+
+  <footer class="meta">
+    {{ with .Lastmod }}
+      <p class="small muted">Last updated: {{ .Format "2006-01-02" }}</p>
+    {{ end }}
+  </footer>
+</article>
 {{ end }}

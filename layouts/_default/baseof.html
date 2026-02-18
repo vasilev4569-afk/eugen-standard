@@ -3,24 +3,15 @@
 <head>
   {{ partial "head.html" . }}
 </head>
-<body>
-  <header>
-    <nav>
-      <a href="/{{ .Site.Language.Lang }}/">Home</a>
-      <a href="/{{ .Site.Language.Lang }}/data/">Data</a>
-      <a href="/{{ .Site.Language.Lang }}/methodology/">Methodology</a>
-      <a href="/{{ .Site.Language.Lang }}/calculators/">Calculator</a>
-      <a href="/{{ .Site.Language.Lang }}/reviews/">Reviews</a>
-      <a href="/{{ .Site.Language.Lang }}/best/">Best</a>
-    </nav>
-  </header>
+<body class="site">
+  {{ partial "header.html" . }}
 
-  <main>
-    {{ block "main" . }}{{ end }}
+  <main class="site-main">
+    <div class="container">
+      {{ block "main" . }}{{ end }}
+    </div>
   </main>
 
-  <footer>
-    <small>© {{ now.Format "2006" }} {{ .Site.Title }}</small>
-  </footer>
+  {{ partial "footer.html" . }}
 </body>
 </html>

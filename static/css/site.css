@@ -1,11 +1,251 @@
-﻿body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:860px;margin:24px auto;padding:0 16px;line-height:1.55}
-nav a{margin-right:10px}
-table{border-collapse:collapse;margin-top:8px}
-th,td{border-bottom:1px solid #eee;padding:8px 0;vertical-align:top}
-.cap-switch{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 18px; }
-.cap-btn{
-  display:inline-block; padding:8px 12px; border:1px solid #ddd; border-radius:10px;
-  text-decoration:none; background:#fafafa; color:#111;
+﻿/* === Base === */
+:root{
+  --bg:#ffffff;
+  --text:#111111;
+  --muted:#6b7280;
+  --border:#e5e7eb;
+  --card:#fafafa;
+  --brand:#111111;
+  --radius:16px;
 }
-.cap-btn.is-active{ background:#111; color:#fff; border-color:#111; }
 
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  line-height:1.55;
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* Media */
+img,video{ max-width:100%; height:auto; display:block; }
+
+/* Links */
+a{ color:inherit; text-decoration:none; }
+a:hover{ text-decoration:underline; }
+
+/* === Layout === */
+.container{
+  max-width:1200px;
+  margin:0 auto;
+  padding:0 24px;
+}
+
+.site-main{
+  padding:24px 0 56px;
+}
+
+.text{
+  max-width:760px;
+}
+
+/* === Header === */
+.site-header{
+  position:sticky;
+  top:0;
+  z-index:10;
+  background:rgba(255,255,255,.95);
+  backdrop-filter:saturate(180%) blur(8px);
+  border-bottom:1px solid var(--border);
+}
+
+.header-inner{
+  min-height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+
+.brand{
+  font-weight:700;
+  white-space:nowrap;
+}
+
+.topnav{
+  display:flex;
+  gap:12px;
+}
+
+.topnav a{
+  padding:8px 10px;
+  border-radius:10px;
+  font-size:14px;
+  white-space:nowrap;
+}
+
+.topnav a:hover{
+  background:var(--card);
+  text-decoration:none;
+}
+
+/* === Footer === */
+.site-footer{
+  border-top:1px solid var(--border);
+  padding:20px 0;
+}
+
+.footer-inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+}
+
+.footnav{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.footnav a{
+  color:var(--muted);
+}
+
+.muted{ color:var(--muted); }
+
+/* === Typography === */
+h1,h2,h3{ line-height:1.2; margin:0 0 12px; }
+h1{ font-size:32px; letter-spacing:-.2px; }
+p{ margin:0 0 12px; }
+.lead{ font-size:18px; color:var(--muted); margin-top:8px; }
+.small{ font-size:13px; }
+
+/* === Data page === */
+.data-page{ padding-top:6px; }
+.page-header{ margin-bottom:16px; }
+
+.unit-photo{
+  margin:16px 0 0;
+  border-radius:var(--radius);
+  overflow:hidden;
+  background:var(--card);
+  border:1px solid var(--border);
+}
+
+.unit-photo-img{
+  width:100%;
+  height:420px;
+  object-fit:cover;
+  object-position:center;
+}
+
+/* === Content === */
+.content{ margin-top:16px; }
+
+/* === Tables (global inside content) === */
+/* We enforce a stable first column width and consistent alignment */
+.content table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:12px;
+  font-size:14px;
+  table-layout:fixed;           /* ключ: фиксируем сетку колонок */
+}
+
+.content th,
+.content td{
+  border-bottom:1px solid var(--border);
+  padding:10px 10px;
+  vertical-align:top;
+  text-align:left;
+  overflow-wrap:anywhere;       /* длинные значения (serial/firmware) не ломают таблицу */
+  word-break:normal;
+}
+
+.content th{
+  font-weight:600;
+  background:#fff;
+}
+
+/* Fixed first column (Metric / field name) */
+.content th:first-child,
+.content td:first-child{
+  width: 280px;                 /* фикс ширины 1 столбца */
+  font-weight:600;
+  color:#111;
+}
+
+/* Make numeric columns feel cleaner */
+.content td:not(:first-child){
+  font-variant-numeric: tabular-nums;
+}
+
+/* Slight hover help on desktop */
+@media (hover:hover){
+  .content tr:hover td{ background:#fcfcfc; }
+}
+
+/* If a table is still wider than viewport, allow scrolling (fallback) */
+.table-wrapper{
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+
+/* Capacity switch */
+.cap-switch{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 18px; }
+
+.cap-btn{
+  display:inline-block;
+  padding:8px 12px;
+  border:1px solid #ddd;
+  border-radius:10px;
+  background:#fafafa;
+  font-size:14px;
+}
+
+.cap-btn.is-active{
+  background:#111;
+  color:#fff;
+  border-color:#111;
+}
+
+/* === Mobile === */
+@media (max-width: 768px){
+
+  .container{ padding:0 16px; }
+
+  .header-inner{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+  }
+
+  .topnav{
+    width:100%;
+    overflow-x:auto;
+    gap:8px;
+    padding-bottom:6px;
+  }
+
+  .topnav a{
+    font-size:13px;
+    padding:6px 8px;
+  }
+
+  h1{ font-size:24px; }
+  .lead{ font-size:16px; }
+  .unit-photo-img{ height:260px; }
+
+  .footer-inner{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+  }
+
+  /* On mobile, first column a bit narrower */
+  .content th:first-child,
+  .content td:first-child{
+    width: 190px;
+  }
+
+  /* Slightly tighter table padding on mobile */
+  .content th,
+  .content td{
+    padding:8px 8px;
+    font-size:13px;
+  }
+}
