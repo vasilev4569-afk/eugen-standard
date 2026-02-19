@@ -1,6 +1,12 @@
 ---
 title: "Kingston XS1000 1TB - Raw Test Data"
 description: "Independent technical performance measurements of the Kingston XS1000 1TB conducted in a controlled test environment in accordance with the standardized Eugen Standard methodology."
+brand: "Kingston"
+model: "XS1000"
+brand_slug: "kingston"
+model_slug: "xs1000"
+capacity_label: "1TB"
+capacity_slug: "1tb"
 ---
 
 {{< rawhtml >}}

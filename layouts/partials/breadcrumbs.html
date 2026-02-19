@@ -11,7 +11,8 @@
   {{- $labelHome := "Home" -}}
   {{- if eq $lang "de" -}}{{- $labelHome = "Startseite" -}}{{- end -}}
   {{- if eq $lang "fr" -}}{{- $labelHome = "Accueil" -}}{{- end -}}
-  {{- if eq $lang "ru" -}}{{- $labelHome = "лавная" -}}{{- end -}}
+  {{- if eq $lang "ru" -}}{{- $labelHome = "Главная" -}}{{- end -}}
+
 
   {{- $crumbs := slice -}}
   {{- $crumbs = $crumbs | append (dict "title" $labelHome "url" .Site.Home.RelPermalink) -}}
@@ -22,7 +23,17 @@
     {{- end -}}
   {{- end -}}
 
-  {{- $crumbs = $crumbs | append (dict "title" .Title "url" .RelPermalink) -}}
+    {{- /* Current page crumb: for capacity leaf pages show only "1TB" etc. */ -}}
+  {{- $currentTitle := .Title -}}
+  {{- with .Params.capacity_label -}}
+    {{- $currentTitle = . -}}
+  {{- else -}}
+    {{- with .Params.capacity_slug -}}
+      {{- $currentTitle = . -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $crumbs = $crumbs | append (dict "title" $currentTitle "url" .RelPermalink) -}}
+
 
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <ol>
