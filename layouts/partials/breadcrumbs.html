@@ -1,0 +1,48 @@
+{{- /* =========================================================
+     Breadcrumbs (global)
+     - Hidden on Home + taxonomy/term pages
+     - Works for multilingual
+     - Includes JSON-LD BreadcrumbList
+     ========================================================= */ -}}
+
+{{- if or .IsHome (in (slice "taxonomy" "term") .Kind) -}}
+{{- else -}}
+  {{- $lang := .Site.Language.Lang -}}
+  {{- $labelHome := "Home" -}}
+  {{- if eq $lang "de" -}}{{- $labelHome = "Startseite" -}}{{- end -}}
+  {{- if eq $lang "fr" -}}{{- $labelHome = "Accueil" -}}{{- end -}}
+  {{- if eq $lang "ru" -}}{{- $labelHome = "лавная" -}}{{- end -}}
+
+  {{- $crumbs := slice -}}
+  {{- $crumbs = $crumbs | append (dict "title" $labelHome "url" .Site.Home.RelPermalink) -}}
+
+  {{- range .Ancestors.Reverse -}}
+    {{- if and (ne .RelPermalink $.Site.Home.RelPermalink) (ne .Title "") -}}
+      {{- $crumbs = $crumbs | append (dict "title" .Title "url" .RelPermalink) -}}
+    {{- end -}}
+  {{- end -}}
+
+  {{- $crumbs = $crumbs | append (dict "title" .Title "url" .RelPermalink) -}}
+
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <ol>
+      {{- range $i, $c := $crumbs -}}
+        <li>
+          {{- if lt $i (sub (len $crumbs) 1) -}}
+            <a href="{{ $c.url }}">{{ $c.title }}</a>
+          {{- else -}}
+            <span aria-current="page">{{ $c.title }}</span>
+          {{- end -}}
+        </li>
+      {{- end -}}
+    </ol>
+  </nav>
+
+  {{- $items := slice -}}
+  {{- range $i, $c := $crumbs -}}
+    {{- $items = $items | append (dict "@type" "ListItem" "position" (add $i 1) "name" $c.title "item" ($c.url | absURL)) -}}
+  {{- end -}}
+  <script type="application/ld+json">
+  {{- dict "@context" "https://schema.org" "@type" "BreadcrumbList" "itemListElement" $items | jsonify -}}
+  </script>
+{{- end -}}

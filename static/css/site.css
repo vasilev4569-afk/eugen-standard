@@ -1,4 +1,4 @@
-﻿/* =========================
+/* =========================
    Eugen Standard — site.css
    Clean single-source CSS
    ========================= */
@@ -160,18 +160,13 @@ th, td{
 
 /* --- IMPORTANT: keep identical column boundaries across ALL data tables --- */
 .data-table{
-  table-layout:fixed; /* стабилизирует колонки между разными таблицами */
+  table-layout:fixed; /* стабилизирует колонки */
 }
 
-/* Фиксируем ширины первых двух колонок, чтобы вертикальная линия была ровной */
+/* Фиксируем ширину ТОЛЬКО первой колонки (Metric) */
 .data-table th:first-child,
 .data-table td:first-child{
-  width:260px;
-}
-
-.data-table th:nth-child(2),
-.data-table td:nth-child(2){
-  width:210px;
+  width:240px;
 }
 
 /* остальные колонки равномерно займут остаток */
@@ -291,31 +286,31 @@ th, td{
     gap:10px;
   }
 
-  .meta-table th{ width:180px; }
+  .meta-table th{ width:220px; }
 }
 
 /* Hide attempts only under 576px:
    columns order: Metric | Average(Median) | Attempt1 | Attempt2 | Attempt3 */
 @media (max-width: 576px){
-  /* на мобилке вернём авто-раскладку, чтобы ничего не выпирало */
-  .data-table{ table-layout:auto; }
 
+  /* фиксируем первую колонку в px */
   .data-table th:first-child,
-  .data-table td:first-child,
+  .data-table td:first-child{
+    width:220px;
+    min-width:220px;
+    max-width:220px;
+  }
+
   .data-table th:nth-child(2),
   .data-table td:nth-child(2){
     width:auto;
+    text-align:center;   /* <-- ВОТ ЭТО ИЗМЕНЕНИЕ: было right */
+    font-weight:700;
   }
 
   .data-table th:nth-child(n+3),
   .data-table td:nth-child(n+3){
     display:none;
-  }
-
-  .data-table th:nth-child(2),
-  .data-table td:nth-child(2){
-    text-align:right;
-    font-weight:700;
   }
 }
 
@@ -324,4 +319,45 @@ th, td{
   .data-table td:nth-child(n+3){
     display:table-cell;
   }
+}
+
+/* ===== Breadcrumbs ===== */
+.breadcrumbs{
+  margin: 10px 0 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.breadcrumbs ol{
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.breadcrumbs li{
+  display: inline-flex;
+  align-items: center;
+}
+
+.breadcrumbs li + li::before{
+  content: "›";
+  margin: 0 6px;
+  color: var(--muted);
+}
+
+.breadcrumbs a{
+  color: inherit;
+  text-decoration: none;
+}
+
+.breadcrumbs a:hover{
+  text-decoration: underline;
+}
+
+.breadcrumbs [aria-current="page"]{
+  color: var(--text);
+  font-weight: 600;
 }

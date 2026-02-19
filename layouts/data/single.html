@@ -1,33 +1,64 @@
 ﻿{{ define "main" }}
 
-{{ $imgs := .Resources.ByType "image" }}
-{{ $img := "" }}
-{{ if gt (len $imgs) 0 }}
-  {{ $img = index (sort $imgs "Name" "asc") 0 }}
-{{ end }}
+{{/* 1) Find first image resource in this page bundle (if any) */}}
+{{ $img := or (.Resources.GetMatch "{*.webp,*.jpg,*.jpeg,*.png}")
+              (.Resources.GetMatch "photo*") }}
 
+{{/* 2) Work with rendered HTML from Markdown */}}
 {{ $c := .Content }}
-{{ $pattern := `(?s)^(.*?)(<h2>Test unit & environment</h2>\s*<table class="meta-table".*?</table>)(.*)$` }}
-{{ $hasTestUnit := and (in $c "meta-table") (in $c "Test unit & environment") }}
+
+{{/* Match the “Test unit & environment” block (note: HTML may contain &amp;) */}}
+{{ $pattern := `(?s)^(.*?)(<h2>Test unit (?:&amp;|&) environment</h2>\s*<table class="meta-table".*?</table>)(.*)$` }}
+
+{{/* Detect that the block exists */}}
+{{ $hasTestUnit := and (in $c "meta-table") (or (in $c "Test unit &amp; environment") (in $c "Test unit & environment")) }}
 
 <article class="data-page">
 
   <header class="page-header">
     <h1>{{ .Title }}</h1>
 
-    {{ $dir := strings.TrimSuffix "/" .File.Dir }}
-    {{ $cap := path.Base $dir }}
-    {{ $seriesDir := path.Dir $dir }}
-    {{ $base := printf "/%s/" $seriesDir | relLangURL }}
+    {{/* -------- Capacity switch (only existing pages + current always) -------- */}}
 
-    {{ $isCapPage := or (eq $cap "500gb") (eq $cap "1tb") (eq $cap "2tb") }}
-    {{ if $isCapPage }}
+    {{/* Current cap from URL (safe) */}}
+    {{ $cap := path.Base (strings.TrimSuffix "/" .RelPermalink) }}
+
+    {{/* Base URL for series: /en/data/.../samsung_t7/ (remove trailing cap) */}}
+    {{ $seriesBase := replaceRE `(500gb|1tb|2tb)/$` "" .RelPermalink }}
+
+    {{/* Path for GetPage WITHOUT language prefix (so GetPage works reliably) */}}
+    {{ $seriesPath := strings.TrimPrefix .Site.LanguagePrefix $seriesBase }}
+
+    {{/* Look for sibling capacity pages in current language */}}
+    {{ $p500 := .Site.GetPage (printf "%s500gb" $seriesPath) }}
+    {{ $p1   := .Site.GetPage (printf "%s1tb"   $seriesPath) }}
+    {{ $p2   := .Site.GetPage (printf "%s2tb"   $seriesPath) }}
+
+    {{/* Consider “exists” only if it is an actual page (not a section/list) */}}
+    {{ $has500 := and $p500 (eq $p500.Kind "page") }}
+    {{ $has1   := and $p1   (eq $p1.Kind "page") }}
+    {{ $has2   := and $p2   (eq $p2.Kind "page") }}
+
+    {{/* Always show current, others only if real page exists */}}
+    {{ $show500 := or (eq $cap "500gb") $has500 }}
+    {{ $show1   := or (eq $cap "1tb")   $has1 }}
+    {{ $show2   := or (eq $cap "2tb")   $has2 }}
+
+    {{ if or $show500 $show1 $show2 }}
       <nav class="cap-switch" aria-label="Capacity switch">
-        <a class="cap-btn {{ if eq $cap "500gb" }}is-active{{ end }}" href="{{ $base }}500gb/">500GB</a>
-        <a class="cap-btn {{ if eq $cap "1tb" }}is-active{{ end }}" href="{{ $base }}1tb/">1TB</a>
-        <a class="cap-btn {{ if eq $cap "2tb" }}is-active{{ end }}" href="{{ $base }}2tb/">2TB</a>
+        {{ if $show500 }}
+          <a class="cap-btn {{ if eq $cap "500gb" }}is-active{{ end }}" href="{{ $seriesBase }}500gb/">500GB</a>
+        {{ end }}
+        {{ if $show1 }}
+          <a class="cap-btn {{ if eq $cap "1tb" }}is-active{{ end }}" href="{{ $seriesBase }}1tb/">1TB</a>
+        {{ end }}
+        {{ if $show2 }}
+          <a class="cap-btn {{ if eq $cap "2tb" }}is-active{{ end }}" href="{{ $seriesBase }}2tb/">2TB</a>
+        {{ end }}
       </nav>
     {{ end }}
+
+    {{/* ---------------------------------------------------------------------- */}}
 
     {{ with .Params.description }}
       <p class="lead">{{ . }}</p>
@@ -47,7 +78,6 @@
       {{ $table := replaceRE `(?s)^<h2>.*?</h2>\s*` "" $block }}
 
       {{ $before | safeHTML }}
-
       {{ $h2 | safeHTML }}
 
       <div class="testunit-grid">
