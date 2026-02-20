@@ -1,16 +1,29 @@
 ﻿{{ define "main" }}
 
-{{/* 1) Find first image resource in this page bundle (if any) */}}
-{{ $img := or (.Resources.GetMatch "{*.webp,*.jpg,*.jpeg,*.png}")
-              (.Resources.GetMatch "photo*") }}
+{{/* =========================================================
+   Layer 1 (clean version):
+   Photo path auto-built from slugs:
+   external-ssd/{brand_slug}/{model_slug}/{capacity_slug}/unit.webp
+   ========================================================= */}}
 
-{{/* 2) Work with rendered HTML from Markdown */}}
+{{/* 1) imgBase from config */}}
+{{ $imgBase := or .Site.Params.imgBase "https://eugen-standard.pages.dev" }}
+{{ $imgBase = strings.TrimSuffix "/" $imgBase }}
+
+{{/* 2) Build photo path from slugs */}}
+{{ $brand := .Params.brand_slug }}
+{{ $model := .Params.model_slug }}
+{{ $capacity := .Params.capacity_slug }}
+
+{{ $photoURL := "" }}
+{{ if and $brand $model $capacity }}
+  {{ $photoURL = printf "%s/external-ssd/%s/%s/%s/unit.webp" $imgBase $brand $model $capacity }}
+{{ end }}
+
+{{/* 3) Work with rendered HTML */}}
 {{ $c := .Content }}
 
-{{/* Match the “Test unit & environment” block (note: HTML may contain &amp;) */}}
 {{ $pattern := `(?s)^(.*?)(<h2>Test unit (?:&amp;|&) environment</h2>\s*<table class="meta-table".*?</table>)(.*)$` }}
-
-{{/* Detect that the block exists */}}
 {{ $hasTestUnit := and (in $c "meta-table") (or (in $c "Test unit &amp; environment") (in $c "Test unit & environment")) }}
 
 <article class="data-page">
@@ -18,28 +31,18 @@
   <header class="page-header">
     <h1>{{ .Title }}</h1>
 
-    {{/* -------- Capacity switch (only existing pages + current always) -------- */}}
-
-    {{/* Current cap from URL (safe) */}}
     {{ $cap := path.Base (strings.TrimSuffix "/" .RelPermalink) }}
-
-    {{/* Base URL for series: /en/data/.../samsung_t7/ (remove trailing cap) */}}
     {{ $seriesBase := replaceRE `(500gb|1tb|2tb)/$` "" .RelPermalink }}
-
-    {{/* Path for GetPage WITHOUT language prefix (so GetPage works reliably) */}}
     {{ $seriesPath := strings.TrimPrefix .Site.LanguagePrefix $seriesBase }}
 
-    {{/* Look for sibling capacity pages in current language */}}
     {{ $p500 := .Site.GetPage (printf "%s500gb" $seriesPath) }}
     {{ $p1   := .Site.GetPage (printf "%s1tb"   $seriesPath) }}
     {{ $p2   := .Site.GetPage (printf "%s2tb"   $seriesPath) }}
 
-    {{/* Consider “exists” only if it is an actual page (not a section/list) */}}
     {{ $has500 := and $p500 (eq $p500.Kind "page") }}
     {{ $has1   := and $p1   (eq $p1.Kind "page") }}
     {{ $has2   := and $p2   (eq $p2.Kind "page") }}
 
-    {{/* Always show current, others only if real page exists */}}
     {{ $show500 := or (eq $cap "500gb") $has500 }}
     {{ $show1   := or (eq $cap "1tb")   $has1 }}
     {{ $show2   := or (eq $cap "2tb")   $has2 }}
@@ -58,8 +61,6 @@
       </nav>
     {{ end }}
 
-    {{/* ---------------------------------------------------------------------- */}}
-
     {{ with .Params.description }}
       <p class="lead">{{ . }}</p>
     {{ end }}
@@ -67,13 +68,12 @@
 
   <section class="content">
 
-    {{ if and $hasTestUnit $img }}
+    {{ if and $hasTestUnit $brand $model $capacity }}
 
       {{ $before := replaceRE $pattern "$1" $c }}
       {{ $block  := replaceRE $pattern "$2" $c }}
       {{ $after  := replaceRE $pattern "$3" $c }}
 
-      {{/* split block into H2 (full width) and table (left column only) */}}
       {{ $h2 := replaceRE `(?s)^((?:<h2>.*?</h2>)).*` "$1" $block }}
       {{ $table := replaceRE `(?s)^<h2>.*?</h2>\s*` "" $block }}
 
@@ -88,8 +88,9 @@
         <div class="testunit-right">
           <figure class="testunit-photo">
             <img
-              class="testunit-photo-img"
-              src="{{ $img.RelPermalink }}"
+  class="testunit-photo-img"
+  src="{{ $photoURL }}"
+  onerror="this.closest('.testunit-right').style.display='none';"
               alt="{{ .Title }} - test unit photo"
               loading="lazy"
               decoding="async">

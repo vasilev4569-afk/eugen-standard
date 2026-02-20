@@ -18,8 +18,11 @@ defaultContentLanguageInSubdir = true
     languageName = "Francais"
     weight = 3
     contentDir = "content/fr"
-	
-	[markup]
+
+[markup]
   [markup.goldmark]
     [markup.goldmark.renderer]
       unsafe = true
+
+[params]
+imgBase = "https://pub-29b0e1892b2b48d697b4fa55e3cef646.r2.dev"

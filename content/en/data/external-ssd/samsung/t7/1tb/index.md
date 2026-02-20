@@ -7,6 +7,7 @@ brand_slug: "samsung"
 model_slug: "t7"
 capacity_label: "1TB"
 capacity_slug: "1tb"
+photo_key: "external-ssd/samsung/t7/1tb"
 ---
 
 {{< rawhtml >}}
