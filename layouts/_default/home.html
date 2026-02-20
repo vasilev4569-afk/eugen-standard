@@ -1,4 +1,78 @@
 ﻿{{ define "main" }}
-  <h1>{{ .Title }}</h1>
-  <div>{{ .Content }}</div>
+
+<article class="home">
+  <div class="container">
+
+    <header class="home-hero">
+      <h1 class="home-title">Data portal</h1>
+      <p class="home-sub">
+        Independent raw benchmarks under a standardized methodology.
+      </p>
+    </header>
+
+    <section class="home-grid">
+
+      <div class="card">
+        <h2 class="card-title">Start here</h2>
+        <p class="card-sub muted">Browse by category.</p>
+        <ul class="linklist">
+          <li>
+            <a href="{{ "/data/external-ssd/" | relLangURL }}">
+              External SSDs
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">How to read the tables</h2>
+        <ul class="bullets">
+          <li><b>Average (Median)</b> — main value to compare.</li>
+          <li><b>Attempts</b> — repeatability check.</li>
+          <li><b>Fresh vs Sustained</b> — cache vs long writes.</li>
+        </ul>
+        <a class="card-link" href="{{ "/methodology/" | relLangURL }}">
+          Open methodology →
+        </a>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Latest updates</h2>
+        <p class="card-sub muted">Manual list for now.</p>
+        <ul class="updates">
+          <li>
+            <span class="pill">Added</span>
+            <a href="{{ "/data/external-ssd/samsung/t7/1tb/" | relLangURL }}">
+              Samsung T7 1TB — Raw Test Data
+            </a>
+          </li>
+          <li>
+            <span class="pill">Added</span>
+            <a href="{{ "/data/external-ssd/samsung/t7/2tb/" | relLangURL }}">
+              Samsung T7 2TB — Raw Test Data
+            </a>
+          </li>
+          <li>
+            <span class="pill">Added</span>
+            <a href="{{ "/data/external-ssd/kingston/xs1000/1tb/" | relLangURL }}">
+              Kingston XS1000 1TB — Raw Test Data
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Integrity</h2>
+        <ul class="bullets">
+          <li>No sponsorship influence.</li>
+          <li>Standardized test environment.</li>
+          <li>Raw measurements (no “marketing scores”).</li>
+        </ul>
+      </div>
+
+    </section>
+
+  </div>
+</article>
+
 {{ end }}

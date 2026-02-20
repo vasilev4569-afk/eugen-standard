@@ -1,14 +1,27 @@
 ﻿<header class="site-header">
   <div class="container header-inner">
-    <a class="brand" href="{{ "/" | relLangURL }}">{{ .Site.Title }}</a>
+
+    <div class="brand">
+      <a class="brand-link" href="{{ "/" | relLangURL }}" aria-label="{{ .Site.Title }}">
+        <span class="brand-title">{{ .Site.Title }}</span>
+        <span class="brand-dot" aria-hidden="true"></span>
+      </a>
+      <div class="brand-tagline">No marketing. Independent tests.</div>
+    </div>
+
+    {{ $data := "/data/" | relLangURL }}
+    {{ $method := "/methodology/" | relLangURL }}
+    {{ $calc := "/calculators/" | relLangURL }}
+    {{ $reviews := "/reviews/" | relLangURL }}
+    {{ $best := "/best/" | relLangURL }}
 
     <nav class="topnav" aria-label="Primary">
-      <a href="{{ "/" | relLangURL }}">Home</a>
-      <a href="{{ "/data/" | relLangURL }}">Data</a>
-      <a href="{{ "/methodology/" | relLangURL }}">Methodology</a>
-      <a href="{{ "/calculators/" | relLangURL }}">Calculator</a>
-      <a href="{{ "/reviews/" | relLangURL }}">Reviews</a>
-      <a href="{{ "/best/" | relLangURL }}">Best</a>
+      <a class="{{ if hasPrefix .RelPermalink $data }}is-active{{ end }}" href="{{ $data }}">Data</a>
+      <a class="{{ if hasPrefix .RelPermalink $reviews }}is-active{{ end }}" href="{{ $reviews }}">Reviews</a>
+      <a class="{{ if hasPrefix .RelPermalink $best }}is-active{{ end }}" href="{{ $best }}">Best</a>
+      <a class="{{ if hasPrefix .RelPermalink $method }}is-active{{ end }}" href="{{ $method }}">Methodology</a>
+      <a class="{{ if hasPrefix .RelPermalink $calc }}is-active{{ end }}" href="{{ $calc }}">Calculators</a>
     </nav>
+
   </div>
 </header>
