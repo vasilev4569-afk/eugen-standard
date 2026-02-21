@@ -27,12 +27,12 @@ capacity_slug: "1tb"
 <th>Average (Median)</th>
 <th>Attempt 1</th><th>Attempt 2</th><th>Attempt 3</th>
 </tr></thead><tbody>
-<tr><td>Avg Speed (MB/s)</td><td class='kpi'>599</td><td>999</td><td>511</td><td>500</td></tr>
-<tr><td>Sustained Speed (MB/s)</td><td class='kpi'>478</td><td>482</td><td>999</td><td>470</td></tr>
-<tr><td>SLC Speed (MB/s)</td><td class='kpi'>768</td><td>666</td><td>666</td><td>999</td></tr>
-<tr><td>Time SLC (sec)</td><td class='kpi'>61</td><td>66</td><td>66</td><td>66</td></tr>
-<tr><td>GiB (SLC data)</td><td class='kpi'>44</td><td>44</td><td>43</td><td>44</td></tr>
-<tr><td>Time total (sec)</td><td class='kpi'>500</td><td>500</td><td>500</td><td>500</td></tr>
+<tr><td>Avg Speed (MB/s)</td><td class='kpi'>364</td><td>364</td><td>371</td><td>354</td></tr>
+<tr><td>Sustained Speed (MB/s)</td><td class='kpi'>134</td><td>134</td><td>135</td><td>130</td></tr>
+<tr><td>SLC Speed (MB/s)</td><td class='kpi'>816</td><td>766</td><td>816</td><td>762</td></tr>
+<tr><td>Time SLC (sec)</td><td class='kpi'>268</td><td>268</td><td>251</td><td>269</td></tr>
+<tr><td>GiB (SLC data)</td><td class='kpi'>191</td><td>191</td><td>191</td><td>191</td></tr>
+<tr><td>Time total (sec)</td><td class='kpi'>738</td><td>738</td><td>724</td><td>759</td></tr>
 </tbody></table>
 <h2>Sequential Read (250GiB)</h2>
 <table class="data-table">
@@ -41,8 +41,8 @@ capacity_slug: "1tb"
 <th>Average (Median)</th>
 <th>Attempt 1</th><th>Attempt 2</th><th>Attempt 3</th>
 </tr></thead><tbody>
-<tr><td>Avg Speed (MB/s)</td><td class='kpi'>657</td><td>658</td><td>222</td><td>222</td></tr>
-<tr><td>Data Size (GiB)</td><td class='kpi'>184</td><td>184</td><td>182</td><td>185</td></tr>
+<tr><td>Avg Speed (MB/s)</td><td class='kpi'>940</td><td>940</td><td>940</td><td>940</td></tr>
+<tr><td>Data Size (GiB)</td><td class='kpi'>263</td><td>263</td><td>263</td><td>263</td></tr>
 </tbody></table>
 <h2>Random Read 4K QD1</h2>
 <table class="data-table">
@@ -51,7 +51,7 @@ capacity_slug: "1tb"
 <th>Average (Median)</th>
 <th>Attempt 1</th><th>Attempt 2</th><th>Attempt 3</th>
 </tr></thead><tbody>
-<tr><td>Avg Speed (MB/s)</td><td class='kpi'>12</td><td>11</td><td>13</td><td>12</td></tr>
-<tr><td>Latency p99 (ms)</td><td class='kpi'>0.5</td><td>0.5</td><td>0.5</td><td>0.5</td></tr>
+<tr><td>Avg Speed (MB/s)</td><td class='kpi'>18</td><td>18</td><td>18</td><td>18</td></tr>
+<tr><td>Latency p99 (ms)</td><td class='kpi'>0.3</td><td>0.3</td><td>0.3</td><td>0.3</td></tr>
 </tbody></table>
 {{< /rawhtml >}}

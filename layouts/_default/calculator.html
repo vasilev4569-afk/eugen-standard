@@ -1,0 +1,528 @@
+{{ define "main" }}
+
+<div class="calc-page">
+  <h1 class="calc-title" id="pageTitleH1">External SSD Read & Write Time Calculator</h1>
+
+  <div class="calc-card">
+    <div class="calc-controls">
+      <div class="calc-left">
+        <label class="calc-label" id="sizeFieldLabel">Write size (GiB)</label>
+        <div class="calc-sizeRow">
+          <input class="calc-number" type="number" id="sizeInput" value="10" min="1" step="1" />
+          <input class="calc-range" type="range" id="sizeRange" value="10" min="1" step="1" />
+        </div>
+        <div class="calc-muted calc-tabnums" id="rangeLine">Range: 0–2000 GiB • Current value: 10 GiB</div>
+      </div>
+
+      <div class="calc-right">
+        <div class="calc-modeBlock">
+          <div class="calc-label" id="modeLabel">Mode</div>
+          <div class="calc-modeSwitch">
+            <button class="calc-modeBtn active" id="modeWriteBtn" type="button">Write</button>
+            <button class="calc-modeBtn" id="modeReadBtn" type="button">Read</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="calc-divider"></div>
+
+    <div class="calc-canvasWrap">
+      <canvas id="chart" class="calc-canvas" height="320"></canvas>
+      <div class="calc-legend">
+        <span class="calc-legendWrite">
+          <span class="calc-dot calc-dot-slc"></span><span id="legendSlc">SLC</span>
+        </span>
+        <span class="calc-legendWrite">
+          <span class="calc-dot calc-dot-sus"></span><span id="legendSus">Sustained</span>
+        </span>
+        <span class="calc-legendRead" style="display:none;">
+          <span class="calc-dot calc-dot-sus"></span><span id="legendSeq">Sequential</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="calc-out">
+      <div class="calc-big calc-tabnums" id="summary">Loading data…</div>
+      <div class="calc-muted calc-tabnums" id="details">Reading /data/calculator.json</div>
+    </div>
+
+    <div class="calc-divider"></div>
+
+    <div class="calc-tableWrap" id="tableWrap">
+      <table class="calc-table" aria-label="Calculator table">
+        <thead>
+          <tr>
+            <th id="thNum" style="width:56px;">#</th>
+            <th id="thModel" style="width:360px;">Model</th>
+
+            <th id="thSlcSpeed" class="calc-rightTxt calc-col-write">SLC speed</th>
+            <th id="thSlcSize" class="calc-rightTxt calc-col-write">SLC size</th>
+
+            <th id="thSpeed" class="calc-rightTxt">Sustained Speed</th>
+
+            <th id="thSlcPart" class="calc-rightTxt calc-col-write">SLC part</th>
+            <th id="thSusPart" class="calc-rightTxt calc-col-write">Sustained part</th>
+
+            <th id="thTotalTime" class="calc-rightTxt calc-col-time">Total time</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="8" class="calc-muted">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="calc-footNote calc-muted" id="footNote" style="margin-top:10px;">
+      Show all models: <span class="calc-tabnums" id="shownAllCount">—</span>
+    </div>
+  </div>
+</div>
+
+<style>
+.calc-page{ max-width:1200px; margin:0 auto; }
+.calc-title{ margin:10px 0 14px; }
+
+.calc-card{
+  border:1px solid var(--border,#e5e7eb);
+  border-radius:16px;
+  padding:16px;
+  background:#fff;
+  box-shadow:0 1px 10px rgba(0,0,0,.04);
+}
+
+.calc-controls{
+  display:grid;
+  grid-template-columns: 1fr 340px;
+  gap:12px;
+  align-items:end;
+}
+@media (max-width: 980px){
+  .calc-controls{ grid-template-columns:1fr; }
+}
+
+.calc-label{ display:block; font-size:13px; color:#374151; margin-bottom:6px; }
+.calc-sizeRow{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.calc-number{
+  max-width:120px;
+  width:120px;
+  padding:10px 12px;
+  border:1px solid #d1d5db;
+  border-radius:12px;
+  font-size:14px;
+}
+.calc-range{ flex:1; min-width:240px; }
+.calc-muted{ color:#6b7280; font-size:13px; line-height:1.35; }
+.calc-tabnums{ font-variant-numeric: tabular-nums; font-feature-settings:"tnum" 1,"lnum" 1; }
+
+.calc-right{ display:grid; gap:10px; }
+
+.calc-modeBlock{
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  padding:10px 10px;
+}
+.calc-modeSwitch{ display:flex; gap:8px; }
+.calc-modeBtn{
+  flex:1;
+  padding:10px 12px;
+  border:1px solid #d1d5db;
+  background:#fff;
+  border-radius:12px;
+  cursor:pointer;
+  font-size:14px;
+}
+.calc-modeBtn:hover{ background:#f9fafb; }
+.calc-modeBtn.active{
+  border-color:#3b82f6;
+  box-shadow:0 0 0 2px rgba(59,130,246,.25);
+}
+
+.calc-divider{ height:1px; background:#e5e7eb; margin:14px 0; }
+
+.calc-canvas{
+  width:100%;
+  height:320px;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  background:#fff;
+  display:block;
+}
+.calc-legend{ display:flex; gap:16px; margin-top:10px; flex-wrap:wrap; }
+.calc-dot{ width:10px; height:10px; border-radius:999px; display:inline-block; margin-right:6px; vertical-align:middle; }
+.calc-dot-slc{ background:#60a5fa; }
+.calc-dot-sus{ background:#3b82f6; }
+
+.calc-out{
+  margin-top:12px;
+  padding:12px;
+  background:#f9fafb;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+}
+.calc-big{ font-size:18px; font-weight:800; line-height:1.2; }
+
+.calc-tableWrap{
+  overflow:auto;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+}
+.calc-table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  min-width:980px;
+  background:#fff;
+}
+.calc-table thead th{
+  position:sticky; top:0;
+  background:#fff;
+  z-index:1;
+  text-align:left;
+  font-size:12px;
+  color:#374151;
+  border-bottom:1px solid #e5e7eb;
+  padding:10px 12px;
+  white-space:nowrap;
+}
+/* FIX: allow right-aligned numeric headers */
+.calc-table thead th.calc-rightTxt{ text-align:right; }
+
+.calc-table tbody td{
+  border-bottom:1px solid #e5e7eb;
+  padding:10px 12px;
+  vertical-align:middle;
+  font-size:14px;
+}
+.calc-rightTxt{ text-align:right; }
+.calc-col-time{ width:150px; min-width:150px; white-space:nowrap; }
+.calc-bestRow{ background:#fef9c3; }
+
+.calc-col-write{ display:table-cell; }
+.calc-mode-read .calc-col-write{ display:none; }
+
+@media (max-width: 520px){
+  .calc-number{ width:100%; max-width:100%; }
+  .calc-range{ min-width:100%; }
+}
+</style>
+
+<script>
+(() => {
+  const el = (id) => document.getElementById(id);
+
+  const pageTitleH1 = el("pageTitleH1");
+  const sizeFieldLabel = el("sizeFieldLabel");
+  const sizeInput = el("sizeInput");
+  const sizeRange = el("sizeRange");
+  const rangeLine = el("rangeLine");
+
+  const modeWriteBtn = el("modeWriteBtn");
+  const modeReadBtn = el("modeReadBtn");
+
+  const summary = el("summary");
+  const details = el("details");
+  const tbody = el("tbody");
+  const shownAllCount = el("shownAllCount");
+
+  const thSpeed = el("thSpeed");
+
+  const chart = el("chart");
+  const ctx = chart.getContext("2d");
+
+  const MB = 1024;
+
+  let MODE = "write";
+  let MODELS = [];
+  let capacityMaxGiB = 0;
+
+  function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+  function humanTime(sec){
+    sec = Math.max(0, Math.round(sec));
+    const h = Math.floor(sec/3600);
+    const m = Math.floor((sec%3600)/60);
+    const s = sec%60;
+    if (h > 0) return `${h} h ${m} min ${s} sec`;
+    if (m > 0) return `${m} min ${s} sec`;
+    return `${s} sec`;
+  }
+
+  function computeMaxGiB(models){
+    let minCap = Infinity;
+    for (const m of models){
+      const cap = Number(m.capacity_gib);
+      if (Number.isFinite(cap) && cap > 0){
+        minCap = Math.min(minCap, cap);
+      }
+    }
+    if (!Number.isFinite(minCap)) return 1000;
+    return Math.max(1, Math.floor(minCap));
+  }
+
+  function updateRangeLine(){
+    const max = capacityMaxGiB || Number(sizeRange.max || 2000);
+    const val = Number(sizeInput.value || 0);
+    rangeLine.textContent = `Range: 0–${max} GiB • Current value: ${val} GiB`;
+  }
+
+  function applyModeUI(){
+    if (MODE === "write"){
+      modeWriteBtn.classList.add("active");
+      modeReadBtn.classList.remove("active");
+      sizeFieldLabel.textContent = "Write size (GiB)";
+      pageTitleH1.textContent = "External SSD Read & Write Time Calculator";
+      thSpeed.textContent = "Sustained Speed";
+
+      document.querySelectorAll(".calc-legendWrite").forEach(x => x.style.display = "");
+      document.querySelectorAll(".calc-legendRead").forEach(x => x.style.display = "none");
+      document.querySelector(".calc-card").classList.remove("calc-mode-read");
+    } else {
+      modeReadBtn.classList.add("active");
+      modeWriteBtn.classList.remove("active");
+      sizeFieldLabel.textContent = "Read size (GiB)";
+      pageTitleH1.textContent = "External SSD Read Time Calculator";
+      thSpeed.textContent = "Sequential Speed";
+
+      document.querySelectorAll(".calc-legendWrite").forEach(x => x.style.display = "none");
+      document.querySelectorAll(".calc-legendRead").forEach(x => x.style.display = "");
+      document.querySelector(".calc-card").classList.add("calc-mode-read");
+    }
+  }
+
+  function calcWriteParts(sizeGiB, m){
+    const slcGiB = Number(m.slc_gib || 0);
+    const slcSpeed = Number(m.slc_speed || 0);
+    const susSpeed = Number(m.sus_speed || 0);
+
+    const slcPartGiB = Math.min(sizeGiB, slcGiB);
+    const susPartGiB = Math.max(0, sizeGiB - slcPartGiB);
+
+    const slcSec = slcSpeed > 0 ? (slcPartGiB*MB) / slcSpeed : Infinity;
+    const susSec = susSpeed > 0 ? (susPartGiB*MB) / susSpeed : Infinity;
+
+    return { slcPartGiB, susPartGiB, slcSec, susSec, totalSec: slcSec + susSec };
+  }
+
+  function calcReadSeconds(sizeGiB, m){
+    const seqSpeed = Number(m.seq_speed || 0);
+    return seqSpeed > 0 ? (sizeGiB*MB) / seqSpeed : Infinity;
+  }
+
+  function sortByTime(list, sizeGiB){
+    const arr = list.slice().map(m => {
+      if (MODE === "write"){
+        const p = calcWriteParts(sizeGiB, m);
+        return { m, seconds: p.totalSec, slcSec: p.slcSec, susSec: p.susSec };
+      } else {
+        const sec = calcReadSeconds(sizeGiB, m);
+        return { m, seconds: sec, slcSec: 0, susSec: sec };
+      }
+    });
+    arr.sort((a,b) => a.seconds - b.seconds);
+    return arr;
+  }
+
+  function drawChart(sorted){
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = chart.clientWidth;
+    const cssH = 320;
+    chart.width = Math.floor(cssW * dpr);
+    chart.height = Math.floor(cssH * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    ctx.clearRect(0,0,cssW,cssH);
+    if (!sorted.length) return;
+
+    const padL = 220;
+    const padR = 110;
+    const padT = 18;
+    const padB = 18;
+
+    const innerW = Math.max(10, cssW - padL - padR);
+    const innerH = Math.max(10, cssH - padT - padB);
+
+    const rows = sorted.slice(0, 12);
+    const rowH = innerH / rows.length;
+    const barH = Math.max(10, rowH * 0.48);
+
+    const maxSec = Math.max(...rows.map(x => x.seconds));
+
+    ctx.strokeStyle = "#eef2f7";
+    ctx.lineWidth = 1;
+    const gridN = 6;
+    for (let i=1; i<=gridN; i++){
+      const x = padL + (innerW * i/gridN);
+      ctx.beginPath();
+      ctx.moveTo(x, padT);
+      ctx.lineTo(x, padT + innerH);
+      ctx.stroke();
+    }
+
+    rows.forEach((row, idx) => {
+      const yCenter = padT + rowH*idx + rowH/2;
+      const y = yCenter - barH/2;
+
+      const frac = maxSec > 0 ? (row.seconds / maxSec) : 0;
+      const totalW = innerW * frac;
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.fillText(`${idx+1}. ${row.m.name}`, 12, yCenter + 5);
+
+      if (MODE === "write"){
+        const slcFrac = row.seconds > 0 ? (row.slcSec / row.seconds) : 0;
+        const slcW = totalW * slcFrac;
+        const susW = Math.max(0, totalW - slcW);
+
+        ctx.fillStyle = "#60a5fa";
+        ctx.fillRect(padL, y, slcW, barH);
+
+        ctx.fillStyle = "#3b82f6";
+        ctx.fillRect(padL + slcW, y, susW, barH);
+
+        ctx.strokeStyle = "#e5e7eb";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(padL, y, totalW, barH);
+      } else {
+        ctx.fillStyle = "#3b82f6";
+        ctx.fillRect(padL, y, totalW, barH);
+      }
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "700 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.fillText(humanTime(row.seconds), padL + innerW + 16, yCenter + 5);
+    });
+
+    ctx.strokeStyle = "#e5e7eb";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(padL, padT, innerW, innerH);
+  }
+
+  function render(){
+    if (!MODELS.length){
+      summary.textContent = "No data";
+      details.textContent = "Reading /data/calculator.json";
+      tbody.innerHTML = `<tr><td colspan="8" class="calc-muted">No data</td></tr>`;
+      drawChart([]);
+      shownAllCount.textContent = "0";
+      return;
+    }
+
+    const sizeGiB = clamp(Number(sizeInput.value || 0), 0, capacityMaxGiB || 2000);
+
+    const sorted = sortByTime(MODELS, sizeGiB);
+    const best = sorted[0];
+    const worst = sorted[sorted.length - 1];
+
+    summary.textContent = `Best time for ${sizeGiB} GiB: ${best.m.name} — ${humanTime(best.seconds)}`;
+    const diff = worst.seconds - best.seconds;
+    details.textContent = `Worst: ${worst.m.name} — ${humanTime(worst.seconds)} • Difference ≈ ${humanTime(diff)}`;
+
+    drawChart(sorted);
+
+    const rowsHtml = [];
+    sorted.forEach((row, idx) => {
+      const m = row.m;
+      const time = row.seconds;
+
+      const slcSpeed = Number(m.slc_speed || 0);
+      const slcGiB = Number(m.slc_gib || 0);
+      const susSpeed = Number(m.sus_speed || 0);
+      const seqSpeed = Number(m.seq_speed || 0);
+
+      const slcPart = Math.min(sizeGiB, slcGiB);
+      const susPart = Math.max(0, sizeGiB - slcPart);
+
+      const speedVal = (MODE === "write") ? susSpeed : seqSpeed;
+
+      const isBest = idx === 0;
+      rowsHtml.push(`
+        <tr class="${isBest ? "calc-bestRow" : ""}">
+          <td class="calc-tabnums">${idx+1}</td>
+          <td><strong>${m.name}</strong></td>
+
+          <td class="calc-rightTxt calc-tabnums calc-col-write">${slcSpeed ? `${Math.round(slcSpeed)} MB/s` : "—"}</td>
+          <td class="calc-rightTxt calc-tabnums calc-col-write">${slcGiB ? `${Math.round(slcGiB)} GiB` : "—"}</td>
+
+          <td class="calc-rightTxt calc-tabnums">${speedVal ? `${Math.round(speedVal)} MB/s` : "—"}</td>
+
+          <td class="calc-rightTxt calc-tabnums calc-col-write">${slcPart ? `${Math.round(slcPart)} GiB` : "0 GiB"}</td>
+          <td class="calc-rightTxt calc-tabnums calc-col-write">${susPart ? `${Math.round(susPart)} GiB` : "0 GiB"}</td>
+
+          <td class="calc-rightTxt calc-tabnums calc-col-time"><strong>${humanTime(time)}</strong></td>
+        </tr>
+      `);
+    });
+
+    tbody.innerHTML = rowsHtml.join("");
+    shownAllCount.textContent = String(sorted.length);
+
+    updateRangeLine();
+  }
+
+  async function loadData(){
+    summary.textContent = "Loading data…";
+    details.textContent = "Reading /data/calculator.json";
+    tbody.innerHTML = `<tr><td colspan="8" class="calc-muted">Loading…</td></tr>`;
+
+    try {
+      const res = await fetch(`/data/calculator.json`, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      MODELS = Array.isArray(data) ? data : [];
+      capacityMaxGiB = computeMaxGiB(MODELS);
+
+      sizeRange.max = String(capacityMaxGiB);
+      sizeInput.max = String(capacityMaxGiB);
+
+      const current = clamp(Number(sizeInput.value || 10), 1, capacityMaxGiB);
+      sizeInput.value = String(current);
+      sizeRange.value = String(current);
+
+      updateRangeLine();
+      render();
+    } catch (e){
+      console.error(e);
+      summary.textContent = "Data load error";
+      details.textContent = String(e);
+      tbody.innerHTML = `<tr><td colspan="8" class="calc-muted">Data load error: ${String(e)}</td></tr>`;
+      MODELS = [];
+      capacityMaxGiB = 0;
+      shownAllCount.textContent = "—";
+    }
+  }
+
+  sizeInput.addEventListener("input", () => {
+    const v = Number(sizeInput.value || 0);
+    sizeRange.value = String(v);
+    render();
+  });
+
+  sizeRange.addEventListener("input", () => {
+    const v = Number(sizeRange.value || 0);
+    sizeInput.value = String(v);
+    render();
+  });
+
+  modeWriteBtn.addEventListener("click", () => {
+    MODE = "write";
+    applyModeUI();
+    render();
+  });
+
+  modeReadBtn.addEventListener("click", () => {
+    MODE = "read";
+    applyModeUI();
+    render();
+  });
+
+  window.addEventListener("resize", () => render());
+
+  applyModeUI();
+  loadData();
+})();
+</script>
+
+{{ end }}

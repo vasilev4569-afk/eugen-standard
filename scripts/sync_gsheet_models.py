@@ -3,9 +3,12 @@
 
 import csv
 import re
+import json
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from urllib.request import urlopen
+from datetime import datetime, timezone
+
 
 CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSNY87-WIChWcLHd8Ilyx4Smy8hxRC690C4wjhb_yLgfi3uooSD91Pw6TZiK83n269O8AC_3koMsI1-/pub?gid=0&single=true&output=csv"
 
@@ -20,7 +23,8 @@ def norm_header(h: str) -> str:
 
 
 def read_csv(url: str) -> List[Dict[str, str]]:
-    raw = urlopen(url).read().decode("utf-8", errors="replace")
+    sep = "&" if "?" in url else "?"
+    raw = urlopen(f"{url}{sep}ts={__import__('time').time_ns()}").read().decode("utf-8", errors="replace")
     reader = csv.reader(raw.splitlines())
     rows = list(reader)
     if not rows:
@@ -52,6 +56,233 @@ def esc_html(s: str) -> str:
         .replace('"', "&quot;")
     )
 
+
+def parse_number(s: str):
+    """
+    Parse first float/int from string.
+    Examples:
+      "511" -> 511.0
+      "511 (516)" -> 511.0
+      "" -> None
+    """
+    if s is None:
+        return None
+    t = str(s).strip()
+    if not t:
+        return None
+    m = re.search(r"-?\d+(?:\.\d+)?", t.replace(",", "."))
+    if not m:
+        return None
+    try:
+        return float(m.group(0))
+    except Exception:
+        return None
+
+
+# ==========================
+# CALCULATOR JSON GENERATION
+# ==========================
+
+def build_calculator_json(rows: List[Dict[str, str]]) -> List[Dict]:
+    """
+    Builds calculator models from SAME table.
+
+    We map by:
+      section_key:
+        - fresh_seq_write_250gib => slc_speed, sus_speed, slc_gib
+        - seq_read_250gib        => seq_speed
+
+      metrics (robust):
+        - by metric_key (preferred when stable)
+        - and by metric_label (fallback)
+    Values:
+      - use avg (requested)
+      - fallback: parse first number from avg_median (e.g. "511 (516)" -> 511)
+    """
+    models: Dict[str, Dict] = {}
+
+    for r in rows:
+        section = (r.get("section_key") or "").strip()
+        metric_key = (r.get("metric_key") or "").strip().lower()
+        metric_label = (r.get("metric_label") or "").strip().lower()
+
+        key = (
+            (r.get("brand_slug") or "").strip(),
+            (r.get("model_slug") or "").strip(),
+            (r.get("capacity_slug") or "").strip(),
+            (r.get("lang") or "").strip(),
+        )
+        if not all(key):
+            continue
+
+        model_id = "_".join(key)
+
+        # capacity (GiB) comes from the source table (same for all rows of a model)
+        cap_gib = parse_number(r.get("capacity_gib"))
+        if isinstance(cap_gib, float) and cap_gib.is_integer():
+            cap_gib = int(cap_gib)
+
+        if model_id not in models:
+            models[model_id] = {
+                "model_id": model_id,
+                "name": f'{(r.get("brand") or "").strip()} {(r.get("model") or "").strip()} {(r.get("capacity_label") or "").strip()}',
+                "capacity_gib": cap_gib,
+                "slc_speed": None,
+                "slc_gib": None,
+                "sus_speed": None,
+                "seq_speed": None,
+            }
+        else:
+            # Fill capacity if it was missing on the first encountered row
+            if models[model_id].get("capacity_gib") is None and cap_gib is not None:
+                models[model_id]["capacity_gib"] = cap_gib
+
+        # value: avg preferred, fallback avg_median
+        value = parse_number(r.get("avg"))
+        if value is None:
+            value = parse_number(r.get("avg_median"))
+        if value is None:
+            continue
+
+        # helpers for matching
+        is_avg_speed = ("avg_speed" in metric_key) or ("avg speed" in metric_label)
+        is_slc_speed = ("slc_speed" in metric_key) or ("slc speed" in metric_label)
+        is_sustained = ("sustained" in metric_key) or ("sustained" in metric_label)
+        is_slc_gib = (("slc" in metric_key and "gib" in metric_key) or ("gib" in metric_label and "slc" in metric_label))
+
+        # WRITE
+        if section == "fresh_seq_write_250gib":
+            if is_slc_speed:
+                models[model_id]["slc_speed"] = value
+            elif is_sustained:
+                models[model_id]["sus_speed"] = value
+            elif is_slc_gib:
+                models[model_id]["slc_gib"] = value
+
+        # READ
+        if section == "seq_read_250gib":
+            if is_avg_speed:
+                models[model_id]["seq_speed"] = value
+
+    # keep only complete models
+    result = [
+        m for m in models.values()
+        if (
+            m.get("capacity_gib") is not None and
+            m["slc_speed"] is not None and
+            m["slc_gib"] is not None and
+            m["sus_speed"] is not None and
+            m["seq_speed"] is not None
+        )
+    ]
+    return result
+
+
+def write_calculator_json(models: List[Dict]) -> None:
+    out_file = Path("static/data/calculator.json")
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+
+    tmp_file = out_file.with_suffix(out_file.suffix + ".tmp")
+
+    tmp_file.write_text(
+        json.dumps(models, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8"
+    )
+
+    # atomic replace (Hugo/браузер не увидит "полуфайл")
+    tmp_file.replace(out_file)
+
+    print(f"Calculator JSON generated: {out_file}")
+
+
+# ==========================
+# CALCULATOR PAGE GENERATION
+# ==========================
+
+def now_rfc3339() -> str:
+    # local timezone if available, otherwise UTC
+    try:
+        dt = datetime.now().astimezone()
+    except Exception:
+        dt = datetime.now(timezone.utc)
+    # Hugo likes RFC3339
+    return dt.replace(microsecond=0).isoformat()
+
+
+def collect_calculators(rows: List[Dict[str, str]]) -> Dict[Tuple[str, str], str]:
+    """
+    Returns {(lang, calc_slug): calc_name} deduped from the same published table.
+    Your sheet repeats calc_* for every metric row -> we dedupe by (lang, slug).
+    """
+    out: Dict[Tuple[str, str], str] = {}
+    for r in rows:
+        lang = (r.get("lang") or "").strip()
+        slug = (r.get("calc_slug") or "").strip()
+        name = (r.get("calc_name") or "").strip()
+        if not (lang and slug and name):
+            continue
+        out[(lang, slug)] = name  # last one wins (they should be identical anyway)
+    return out
+
+
+def build_calc_md(title: str) -> str:
+    """
+    Minimal MD page. We intentionally keep body empty (no manual edits expected).
+    Hugo will render this page using your calculators section template.
+    """
+    t = (title or "").replace('"', r"\"")
+    dt = now_rfc3339()
+    front = [
+        "---",
+        f'title: "{t}"',
+        f'date: "{dt}"',
+        f'lastmod: "{dt}"',
+        "---",
+        "",
+        # body can stay empty
+        "",
+    ]
+    return "\n".join(front)
+
+
+def write_calculator_pages(calcs: Dict[Tuple[str, str], str]) -> None:
+    """
+    Writes content/<lang>/calculators/<calc_slug>.md for each calculator.
+    Overwrites on every run.
+    Also removes old calculator md files not present in current set (per lang),
+    excluding _index.md.
+    """
+    # group by lang for cleanup
+    by_lang: Dict[str, Dict[str, str]] = {}
+    for (lang, slug), name in calcs.items():
+        by_lang.setdefault(lang, {})[slug] = name
+
+    for lang, items in by_lang.items():
+        out_dir = OUT_ROOT / lang / "calculators"
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        # write/update
+        for slug, name in sorted(items.items()):
+            out_file = out_dir / f"{slug}.md"
+            out_file.write_text(build_calc_md(name), encoding="utf-8")
+            print(f"Calculator page: {out_file}")
+
+        # cleanup (remove files not in sheet)
+        keep = {f"{slug}.md" for slug in items.keys()}
+        for p in out_dir.glob("*.md"):
+            if p.name == "_index.md":
+                continue
+            if p.name not in keep:
+                try:
+                    p.unlink()
+                    print(f"Removed old calculator page: {p}")
+                except Exception as e:
+                    print(f"WARNING: failed to remove {p}: {e}")
+
+
+# ==========================
+# ORIGINAL PAGE GENERATION
+# ==========================
 
 def build_md(page_rows: List[Dict[str, str]]) -> str:
     r0 = page_rows[0]
@@ -155,6 +386,14 @@ def write_index_md(path: Path, title: str) -> None:
 def main() -> int:
     rows = read_csv(CSV_URL)
     rows = [r for r in rows if truthy(r.get("published", ""))]
+
+    # ===== calculator json (from the SAME published rows) =====
+    calc_models = build_calculator_json(rows)
+    write_calculator_json(calc_models)
+
+    # ===== calculator pages (from calc_name/calc_slug in SAME published rows) =====
+    calcs = collect_calculators(rows)
+    write_calculator_pages(calcs)
 
     pages: Dict[tuple, List[Dict[str, str]]] = {}
     brand_indexes: Dict[tuple, str] = {}

@@ -1,0 +1,29 @@
+[
+  {
+    "model_id": "samsung_t7_1tb_en",
+    "name": "Samsung T7 1TB",
+    "capacity_gib": 931,
+    "slc_speed": 779.0,
+    "slc_gib": 44.0,
+    "sus_speed": 482.0,
+    "seq_speed": 658.0
+  },
+  {
+    "model_id": "samsung_t7_2tb_en",
+    "name": "Samsung T7 2TB",
+    "capacity_gib": 1910,
+    "slc_speed": 779.0,
+    "slc_gib": 88.0,
+    "sus_speed": 482.0,
+    "seq_speed": 658.0
+  },
+  {
+    "model_id": "kingston_xs1000_1tb_en",
+    "name": "Kingston XS1000 1TB",
+    "capacity_gib": 958,
+    "slc_speed": 816.0,
+    "slc_gib": 191.0,
+    "sus_speed": 134.0,
+    "seq_speed": 940.0
+  }
+]
