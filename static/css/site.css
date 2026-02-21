@@ -234,6 +234,44 @@ p{ margin:0 0 12px; }
   max-width:none;
 }
 
+/* =========================================================
+   CODE BLOCKS (Markdown)
+   ========================================================= */
+
+pre{
+  margin:12px 0 16px;
+  padding:12px 14px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--soft);
+  overflow:auto;                 /* allow horizontal scroll if needed */
+  white-space:pre-wrap;          /* wrap long lines */
+  overflow-wrap:anywhere;        /* break very long tokens if needed */
+}
+
+pre code{
+  display:block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size:12px;
+  line-height:1.45;
+  white-space:inherit;           /* follow pre settings */
+}
+
+code{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size:0.95em;
+  background:rgba(15, 23, 42, 0.06);
+  padding:2px 6px;
+  border-radius:8px;
+}
+
+/* don't double-style code inside pre */
+pre code{
+  background:transparent;
+  padding:0;
+  border-radius:0;
+}
+
 /* ===== Capacity switch ===== */
 .cap-switch{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 18px; }
 .cap-btn{
@@ -307,7 +345,6 @@ th, td{
 .data-table th:nth-child(2),
 .data-table td:nth-child(2){
   font-weight:700;
-}
 }
 
 /* subtle zebra for readability */
@@ -561,11 +598,11 @@ th, td{
   .lead{ font-size:16px; }
 
   .header-inner{
-  flex-direction:column;
-  align-items:flex-start;
-  gap:10px;
-  padding:14px 20px 10px 20px;  /* ← добавили боковые */
-}
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+    padding:14px 20px 10px 20px;
+  }
 
   .topnav{
     width:100%;
@@ -612,4 +649,64 @@ th, td{
   .data-table td:nth-child(n+3){
     display:table-cell;
   }
+}
+
+/* ==========================================
+   Chroma (Hugo) — force monochrome code blocks
+   Purpose: readability for command snippets (methodology/docs),
+   avoid theme-dependent token colors.
+   ========================================== */
+
+/* Outer wrappers Hugo may emit */
+.highlight,
+.chroma{
+  background: var(--soft) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 12px 0 16px;
+  overflow: auto;
+}
+
+/* Keep inner pre transparent and preserve line breaks */
+.highlight pre,
+.chroma pre{
+  background: transparent !important;
+  color: inherit !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  white-space: pre !important;     /* preserve PowerShell backticks/newlines */
+  overflow-x: auto;
+}
+
+/* Monochrome everything inside (tokens, spans, etc.) */
+.highlight code,
+.chroma code,
+.highlight pre code,
+.chroma pre code,
+.highlight .ln,
+.chroma .ln{
+  background: transparent !important;
+  color: inherit !important;
+}
+
+/* Force all token spans to inherit text color (kills colorful syntax themes) */
+.chroma span,
+.highlight span{
+  color: inherit !important;
+  background: transparent !important;
+}
+
+/* Optional: line numbers (if enabled) look muted */
+.chroma .lnt,
+.highlight .lnt{
+  color: var(--muted) !important;
+}
+
+/* Optional: keep selection readable */
+.chroma ::selection,
+.highlight ::selection{
+  background: rgba(15, 23, 42, 0.12);
 }

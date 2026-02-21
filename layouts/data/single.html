@@ -31,6 +31,7 @@
   <header class="page-header">
     <h1>{{ .Title }}</h1>
 
+    {{/* Capacity switch (same series: 500GB/1TB/2TB) */}}
     {{ $cap := path.Base (strings.TrimSuffix "/" .RelPermalink) }}
     {{ $seriesBase := replaceRE `(500gb|1tb|2tb)/$` "" .RelPermalink }}
     {{ $seriesPath := strings.TrimPrefix .Site.LanguagePrefix $seriesBase }}
@@ -61,8 +62,16 @@
       </nav>
     {{ end }}
 
-    {{ with .Params.description }}
-      <p class="lead">{{ . }}</p>
+    {{/* Lead text:
+        - prefer .Params.lead (markdown, linkable)
+        - fallback to .Params.description
+    */}}
+    {{ with .Params.lead }}
+      <p class="lead">{{ . | $.Page.RenderString }}</p>
+    {{ else }}
+      {{ with .Params.description }}
+        <p class="lead">{{ . | $.Page.RenderString }}</p>
+      {{ end }}
     {{ end }}
   </header>
 
@@ -88,9 +97,9 @@
         <div class="testunit-right">
           <figure class="testunit-photo">
             <img
-  class="testunit-photo-img"
-  src="{{ $photoURL }}"
-  onerror="this.closest('.testunit-right').style.display='none';"
+              class="testunit-photo-img"
+              src="{{ $photoURL }}"
+              onerror="this.closest('.testunit-right').style.display='none';"
               alt="{{ .Title }} - test unit photo"
               loading="lazy"
               decoding="async">

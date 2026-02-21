@@ -9,7 +9,6 @@ from typing import Dict, List, Tuple
 from urllib.request import urlopen
 from datetime import datetime, timezone
 
-
 CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSNY87-WIChWcLHd8Ilyx4Smy8hxRC690C4wjhb_yLgfi3uooSD91Pw6TZiK83n269O8AC_3koMsI1-/pub?gid=0&single=true&output=csv"
 
 OUT_ROOT = Path("content")
@@ -87,16 +86,12 @@ def build_calculator_json(rows: List[Dict[str, str]]) -> List[Dict]:
     """
     Builds calculator models from SAME table.
 
-    We map by:
-      section_key:
-        - fresh_seq_write_250gib => slc_speed, sus_speed, slc_gib
-        - seq_read_250gib        => seq_speed
+    section_key:
+      - fresh_seq_write_250gib => slc_speed, sus_speed, slc_gib
+      - seq_read_250gib        => seq_speed
 
-      metrics (robust):
-        - by metric_key (preferred when stable)
-        - and by metric_label (fallback)
     Values:
-      - use avg (requested)
+      - use avg (preferred)
       - fallback: parse first number from avg_median (e.g. "511 (516)" -> 511)
     """
     models: Dict[str, Dict] = {}
@@ -133,24 +128,23 @@ def build_calculator_json(rows: List[Dict[str, str]]) -> List[Dict]:
                 "seq_speed": None,
             }
         else:
-            # Fill capacity if it was missing on the first encountered row
             if models[model_id].get("capacity_gib") is None and cap_gib is not None:
                 models[model_id]["capacity_gib"] = cap_gib
 
-        # value: avg preferred, fallback avg_median
         value = parse_number(r.get("avg"))
         if value is None:
             value = parse_number(r.get("avg_median"))
         if value is None:
             continue
 
-        # helpers for matching
         is_avg_speed = ("avg_speed" in metric_key) or ("avg speed" in metric_label)
         is_slc_speed = ("slc_speed" in metric_key) or ("slc speed" in metric_label)
         is_sustained = ("sustained" in metric_key) or ("sustained" in metric_label)
-        is_slc_gib = (("slc" in metric_key and "gib" in metric_key) or ("gib" in metric_label and "slc" in metric_label))
+        is_slc_gib = (
+            ("slc" in metric_key and "gib" in metric_key)
+            or ("gib" in metric_label and "slc" in metric_label)
+        )
 
-        # WRITE
         if section == "fresh_seq_write_250gib":
             if is_slc_speed:
                 models[model_id]["slc_speed"] = value
@@ -159,12 +153,10 @@ def build_calculator_json(rows: List[Dict[str, str]]) -> List[Dict]:
             elif is_slc_gib:
                 models[model_id]["slc_gib"] = value
 
-        # READ
         if section == "seq_read_250gib":
             if is_avg_speed:
                 models[model_id]["seq_speed"] = value
 
-    # keep only complete models
     result = [
         m for m in models.values()
         if (
@@ -183,13 +175,10 @@ def write_calculator_json(models: List[Dict]) -> None:
     out_file.parent.mkdir(parents=True, exist_ok=True)
 
     tmp_file = out_file.with_suffix(out_file.suffix + ".tmp")
-
     tmp_file.write_text(
         json.dumps(models, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8"
     )
-
-    # atomic replace (Hugo/браузер не увидит "полуфайл")
     tmp_file.replace(out_file)
 
     print(f"Calculator JSON generated: {out_file}")
@@ -200,19 +189,17 @@ def write_calculator_json(models: List[Dict]) -> None:
 # ==========================
 
 def now_rfc3339() -> str:
-    # local timezone if available, otherwise UTC
     try:
         dt = datetime.now().astimezone()
     except Exception:
         dt = datetime.now(timezone.utc)
-    # Hugo likes RFC3339
     return dt.replace(microsecond=0).isoformat()
 
 
 def collect_calculators(rows: List[Dict[str, str]]) -> Dict[Tuple[str, str], str]:
     """
     Returns {(lang, calc_slug): calc_name} deduped from the same published table.
-    Your sheet repeats calc_* for every metric row -> we dedupe by (lang, slug).
+    Because calc_* repeats for every metric row, we dedupe by (lang, slug).
     """
     out: Dict[Tuple[str, str], str] = {}
     for r in rows:
@@ -221,38 +208,40 @@ def collect_calculators(rows: List[Dict[str, str]]) -> Dict[Tuple[str, str], str
         name = (r.get("calc_name") or "").strip()
         if not (lang and slug and name):
             continue
-        out[(lang, slug)] = name  # last one wins (they should be identical anyway)
+        out[(lang, slug)] = name
     return out
 
 
 def build_calc_md(title: str) -> str:
     """
-    Minimal MD page. We intentionally keep body empty (no manual edits expected).
-    Hugo will render this page using your calculators section template.
+    Minimal MD page for Hugo.
+    IMPORTANT: uses layouts/_default/calculator.html via:
+      type: "calculator"
+      layout: "calculator"
     """
     t = (title or "").replace('"', r"\"")
     dt = now_rfc3339()
-    front = [
+
+    # даты без кавычек — как ты хотел
+    return "\n".join([
         "---",
         f'title: "{t}"',
-        f'date: "{dt}"',
-        f'lastmod: "{dt}"',
+        'type: "calculator"',
+        'layout: "calculator"',
+        f"date: {dt}",
+        f"lastmod: {dt}",
         "---",
         "",
-        # body can stay empty
-        "",
-    ]
-    return "\n".join(front)
+    ])
 
 
 def write_calculator_pages(calcs: Dict[Tuple[str, str], str]) -> None:
     """
     Writes content/<lang>/calculators/<calc_slug>.md for each calculator.
     Overwrites on every run.
-    Also removes old calculator md files not present in current set (per lang),
+    Removes old calculator md files not present in current set (per lang),
     excluding _index.md.
     """
-    # group by lang for cleanup
     by_lang: Dict[str, Dict[str, str]] = {}
     for (lang, slug), name in calcs.items():
         by_lang.setdefault(lang, {})[slug] = name
@@ -267,7 +256,7 @@ def write_calculator_pages(calcs: Dict[Tuple[str, str], str]) -> None:
             out_file.write_text(build_calc_md(name), encoding="utf-8")
             print(f"Calculator page: {out_file}")
 
-        # cleanup (remove files not in sheet)
+        # cleanup
         keep = {f"{slug}.md" for slug in items.keys()}
         for p in out_dir.glob("*.md"):
             if p.name == "_index.md":
@@ -281,11 +270,13 @@ def write_calculator_pages(calcs: Dict[Tuple[str, str], str]) -> None:
 
 
 # ==========================
-# ORIGINAL PAGE GENERATION
+# ORIGINAL DATA PAGE GENERATION
 # ==========================
 
 def build_md(page_rows: List[Dict[str, str]]) -> str:
     r0 = page_rows[0]
+
+    lang = (r0.get("lang") or "").strip() or "en"
 
     brand = r0.get("brand", "").strip()
     model = r0.get("model", "").strip()
@@ -297,10 +288,20 @@ def build_md(page_rows: List[Dict[str, str]]) -> str:
 
     title = f"{brand} {model} {cap_label} - Raw Test Data"
 
+    # Plain text for meta tags (do NOT put markdown here)
     description = (
         f"Independent technical performance measurements of the "
         f"{brand} {model} {cap_label} conducted in a controlled test "
         f"environment in accordance with the standardized Eugen Standard methodology."
+    )
+
+    # Markdown lead for on-page rendering (linkable)
+    methodology_url = f"/{lang}/methodology/"
+    lead = (
+        f"Independent technical performance measurements of the "
+        f"{brand} {model} {cap_label} conducted in a controlled test "
+        f"environment in accordance with the standardized Eugen Standard "
+        f"[methodology]({methodology_url})."
     )
 
     capacity_gib = r0.get("capacity_gib", "")
@@ -352,11 +353,11 @@ def build_md(page_rows: List[Dict[str, str]]) -> str:
 
     html.append("{{< /rawhtml >}}")
 
-    # Front matter with structured params for breadcrumbs/lists
     front = [
         "---",
         f'title: "{title}"',
         f'description: "{description}"',
+        f'lead: "{lead}"',
         f'brand: "{brand}"',
         f'model: "{model}"',
         f'brand_slug: "{brand_slug}"',
@@ -372,8 +373,7 @@ def build_md(page_rows: List[Dict[str, str]]) -> str:
 
 def write_index_md(path: Path, title: str) -> None:
     """
-    Creates a Hugo section index file. We do NOT overwrite if it already exists,
-    so you can later add descriptions manually without losing them.
+    Creates a Hugo section index file. We do NOT overwrite if it already exists.
     """
     if path.exists():
         return
@@ -387,11 +387,11 @@ def main() -> int:
     rows = read_csv(CSV_URL)
     rows = [r for r in rows if truthy(r.get("published", ""))]
 
-    # ===== calculator json (from the SAME published rows) =====
+    # ===== calculator json =====
     calc_models = build_calculator_json(rows)
     write_calculator_json(calc_models)
 
-    # ===== calculator pages (from calc_name/calc_slug in SAME published rows) =====
+    # ===== calculator pages from calc_name/calc_slug =====
     calcs = collect_calculators(rows)
     write_calculator_pages(calcs)
 
@@ -413,20 +413,18 @@ def main() -> int:
         brand = (r.get("brand") or "").strip()
         model = (r.get("model") or "").strip()
 
-        # Collect section titles
         brand_key = (lang, category, brand_slug)
         if brand_key not in brand_indexes:
             brand_indexes[brand_key] = brand or brand_slug
 
         model_key = (lang, category, brand_slug, model_slug)
         if model_key not in model_indexes:
-            # IMPORTANT: model title should NOT include brand (avoid breadcrumb duplicates)
             model_indexes[model_key] = model or model_slug
 
         key = (lang, category, brand_slug, model_slug, capacity_slug)
         pages.setdefault(key, []).append(r)
 
-    # 1) Write leaf pages (capacity)
+    # leaf pages
     for (lang, category, brand_slug, model_slug, capacity_slug), page_rows in sorted(pages.items()):
         out_dir = OUT_ROOT / lang / "data" / category / brand_slug / model_slug / capacity_slug
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -434,7 +432,7 @@ def main() -> int:
         out_file.write_text(build_md(page_rows), encoding="utf-8")
         print(f"Wrote: {out_file}")
 
-    # 2) Write section indexes (brand/model)
+    # indexes
     for (lang, category, brand_slug), title in sorted(brand_indexes.items()):
         p = OUT_ROOT / lang / "data" / category / brand_slug / "_index.md"
         write_index_md(p, title)

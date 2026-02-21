@@ -1,6 +1,7 @@
 ---
 title: "Samsung T7 1TB - Raw Test Data"
 description: "Independent technical performance measurements of the Samsung T7 1TB conducted in a controlled test environment in accordance with the standardized Eugen Standard methodology."
+lead: "Independent technical performance measurements of the Samsung T7 1TB conducted in a controlled test environment in accordance with the standardized Eugen Standard [methodology](/en/methodology/)."
 brand: "Samsung"
 model: "T7"
 brand_slug: "samsung"
