@@ -1,25 +1,43 @@
 {{ define "main" }}
 
+{{- /* i18n strings for JS (avoid escaping issues) */ -}}
+{{- $t_title_rw := i18n "calc_title_rw" -}}
+{{- $t_title_r  := i18n "calc_title_r" -}}
+{{- $t_write_size := i18n "calc_write_size" -}}
+{{- $t_read_size  := i18n "calc_read_size" -}}
+{{- $t_speed_sust := i18n "calc_th_speed_sustained" -}}
+{{- $t_speed_seq  := i18n "calc_th_speed_sequential" -}}
+
+{{- $t_no_data := i18n "calc_no_data" -}}
+{{- $t_loading_data := i18n "calc_loading_data" -}}
+{{- $t_reading_json := i18n "calc_reading_json" -}}
+{{- $t_data_load_error := i18n "calc_data_load_error" -}}
+
+{{- $t_summary_best := i18n "calc_summary_best" -}}   {{/* placeholders: {size}, {name}, {time} */}}
+{{- $t_summary_worst := i18n "calc_summary_worst" -}} {{/* placeholders: {name}, {time}, {diff} */}}
+
+{{- $t_range_line := i18n "calc_range_line" -}}       {{/* placeholders: {max}, {val} */}}
+
 <div class="calc-page">
-  <h1 class="calc-title" id="pageTitleH1">External SSD Read & Write Time Calculator</h1>
+  <h1 class="calc-title" id="pageTitleH1">{{ i18n "calc_title_rw" }}</h1>
 
   <div class="calc-card">
     <div class="calc-controls">
       <div class="calc-left">
-        <label class="calc-label" id="sizeFieldLabel">Write size (GiB)</label>
+        <label class="calc-label" id="sizeFieldLabel">{{ i18n "calc_write_size" }}</label>
         <div class="calc-sizeRow">
           <input class="calc-number" type="number" id="sizeInput" value="10" min="1" step="1" />
           <input class="calc-range" type="range" id="sizeRange" value="10" min="1" step="1" />
         </div>
-        <div class="calc-muted calc-tabnums" id="rangeLine">Range: 0–2000 GiB • Current value: 10 GiB</div>
+        <div class="calc-muted calc-tabnums" id="rangeLine">{{ i18n "calc_range_line_default" }}</div>
       </div>
 
       <div class="calc-right">
         <div class="calc-modeBlock">
-          <div class="calc-label" id="modeLabel">Mode</div>
+          <div class="calc-label" id="modeLabel">{{ i18n "calc_mode" }}</div>
           <div class="calc-modeSwitch">
-            <button class="calc-modeBtn active" id="modeWriteBtn" type="button">Write</button>
-            <button class="calc-modeBtn" id="modeReadBtn" type="button">Read</button>
+            <button class="calc-modeBtn active" id="modeWriteBtn" type="button">{{ i18n "calc_write" }}</button>
+            <button class="calc-modeBtn" id="modeReadBtn" type="button">{{ i18n "calc_read" }}</button>
           </div>
         </div>
       </div>
@@ -34,17 +52,17 @@
           <span class="calc-dot calc-dot-slc"></span><span id="legendSlc">SLC</span>
         </span>
         <span class="calc-legendWrite">
-          <span class="calc-dot calc-dot-sus"></span><span id="legendSus">Sustained</span>
+          <span class="calc-dot calc-dot-sus"></span><span id="legendSus">{{ i18n "calc_legend_sustained" }}</span>
         </span>
         <span class="calc-legendRead" style="display:none;">
-          <span class="calc-dot calc-dot-sus"></span><span id="legendSeq">Sequential</span>
+          <span class="calc-dot calc-dot-sus"></span><span id="legendSeq">{{ i18n "calc_legend_sequential" }}</span>
         </span>
       </div>
     </div>
 
     <div class="calc-out">
-      <div class="calc-big calc-tabnums" id="summary">Loading data…</div>
-      <div class="calc-muted calc-tabnums" id="details">Reading /data/calculator.json</div>
+      <div class="calc-big calc-tabnums" id="summary">{{ i18n "calc_loading_data" }}</div>
+      <div class="calc-muted calc-tabnums" id="details">{{ i18n "calc_reading_json" }}</div>
     </div>
 
     <div class="calc-divider"></div>
@@ -54,27 +72,27 @@
         <thead>
           <tr>
             <th id="thNum" style="width:56px;">#</th>
-            <th id="thModel" style="width:360px;">Model</th>
+            <th id="thModel" style="width:360px;">{{ i18n "calc_th_model" }}</th>
 
-            <th id="thSlcSpeed" class="calc-rightTxt calc-col-write">SLC speed</th>
-            <th id="thSlcSize" class="calc-rightTxt calc-col-write">SLC size</th>
+            <th id="thSlcSpeed" class="calc-rightTxt calc-col-write">{{ i18n "calc_th_slc_speed" }}</th>
+            <th id="thSlcSize" class="calc-rightTxt calc-col-write">{{ i18n "calc_th_slc_size" }}</th>
 
-            <th id="thSpeed" class="calc-rightTxt">Sustained Speed</th>
+            <th id="thSpeed" class="calc-rightTxt">{{ i18n "calc_th_speed_sustained" }}</th>
 
-            <th id="thSlcPart" class="calc-rightTxt calc-col-write">SLC part</th>
-            <th id="thSusPart" class="calc-rightTxt calc-col-write">Sustained part</th>
+            <th id="thSlcPart" class="calc-rightTxt calc-col-write">{{ i18n "calc_th_slc_part" }}</th>
+            <th id="thSusPart" class="calc-rightTxt calc-col-write">{{ i18n "calc_th_sus_part" }}</th>
 
-            <th id="thTotalTime" class="calc-rightTxt calc-col-time">Total time</th>
+            <th id="thTotalTime" class="calc-rightTxt calc-col-time">{{ i18n "calc_th_total_time" }}</th>
           </tr>
         </thead>
         <tbody id="tbody">
-          <tr><td colspan="8" class="calc-muted">Loading…</td></tr>
+          <tr><td colspan="8" class="calc-muted">{{ i18n "calc_loading_row" }}</td></tr>
         </tbody>
       </table>
     </div>
 
     <div class="calc-footNote calc-muted" id="footNote" style="margin-top:10px;">
-      Show all models: <span class="calc-tabnums" id="shownAllCount">—</span>
+      {{ i18n "calc_show_all" }} <span class="calc-tabnums" id="shownAllCount">—</span>
     </div>
   </div>
 </div>
@@ -185,7 +203,6 @@
   padding:10px 12px;
   white-space:nowrap;
 }
-/* FIX: allow right-aligned numeric headers */
 .calc-table thead th.calc-rightTxt{ text-align:right; }
 
 .calc-table tbody td{
@@ -230,7 +247,31 @@
   const chart = el("chart");
   const ctx = chart.getContext("2d");
 
-  const MB = 1024;
+  // i18n strings injected by Hugo (IMPORTANT: single jsonify, plus safeJS)
+  const I18N = {
+    title_rw: {{ $t_title_rw | jsonify | safeJS }},
+    title_r:  {{ $t_title_r  | jsonify | safeJS }},
+    write_size: {{ $t_write_size | jsonify | safeJS }},
+    read_size:  {{ $t_read_size  | jsonify | safeJS }},
+    speed_sustained: {{ $t_speed_sust | jsonify | safeJS }},
+    speed_sequential: {{ $t_speed_seq | jsonify | safeJS }},
+
+    no_data: {{ $t_no_data | jsonify | safeJS }},
+    loading_data: {{ $t_loading_data | jsonify | safeJS }},
+    reading_json: {{ $t_reading_json | jsonify | safeJS }},
+    data_load_error: {{ $t_data_load_error | jsonify | safeJS }},
+
+    summary_best: {{ $t_summary_best | jsonify | safeJS }},
+    summary_worst: {{ $t_summary_worst | jsonify | safeJS }},
+    range_line: {{ $t_range_line | jsonify | safeJS }},
+  };
+
+  function tpl(s, vars){
+    return String(s || "").replace(/\{(\w+)\}/g, (_, k) => (vars && k in vars) ? String(vars[k]) : "");
+  }
+
+  // speeds in your json are MB/s (actually MiB/s style), and we use GiB in UI.
+  const MiB_PER_GiB = 1024;
 
   let MODE = "write";
   let MODELS = [];
@@ -248,13 +289,66 @@
     return `${s} sec`;
   }
 
+  function toNum(v){
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  // "1TB", "2TB", "500GB" -> GiB (decimal -> GiB)
+  function toGiBFromLabel(label){
+    const s = String(label || "").trim().toUpperCase();
+    if (!s) return 0;
+    const m = s.match(/^(\d+(?:[.,]\d+)?)\s*(TB|GB|GIB|TIB)$/i);
+    if (!m) return 0;
+
+    const num = Number(m[1].replace(",", "."));
+    const unit = m[2].toUpperCase();
+    if (!Number.isFinite(num) || num <= 0) return 0;
+
+    if (unit === "GIB") return num;
+    if (unit === "TIB") return num * 1024;
+
+    const BYTES_PER_GIB = 1024 * 1024 * 1024;
+    if (unit === "GB") return (num * 1e9) / BYTES_PER_GIB;
+    if (unit === "TB") return (num * 1e12) / BYTES_PER_GIB;
+    return 0;
+  }
+
+  // Map ANY of your json shapes into the fields calculator uses.
+  function normalizeModel(raw){
+    const m = raw && typeof raw === "object" ? raw : {};
+
+    // Accept both snake_case and camelCase variants
+    const slc_speed = toNum(m.slc_speed ?? m.slcSpeed);
+    const slc_gib   = toNum(m.slc_gib ?? m.slcGiB ?? m.slc_size_gib ?? m.slcSizeGiB);
+    const sus_speed = toNum(m.sus_speed ?? m.sustained_speed ?? m.sustainedSpeed);
+    const seq_speed = toNum(m.seq_speed ?? m.read_speed ?? m.readSpeed); // for Read mode
+
+    // capacity: try numeric field, then capacity_label like "1TB"
+    const cap =
+      toNum(m.capacity_gib ?? m.capacityGiB) ||
+      toGiBFromLabel(m.capacity_label ?? m.capacityLabel) ||
+      toGiBFromLabel(m.capacity_slug ?? m.capacitySlug);
+
+    return {
+      id: m.id || m.model_id || "",
+      name: m.name || "Unknown model",
+
+      // normalized numeric fields used below
+      capacity_gib: cap,
+      slc_speed,
+      slc_gib,
+      sus_speed,
+      seq_speed
+    };
+  }
+
   function computeMaxGiB(models){
+    // Slider max should be NOT larger than smallest drive in the dataset
     let minCap = Infinity;
     for (const m of models){
-      const cap = Number(m.capacity_gib);
-      if (Number.isFinite(cap) && cap > 0){
-        minCap = Math.min(minCap, cap);
-      }
+      const cap = toNum(m.capacity_gib);
+      if (cap > 0) minCap = Math.min(minCap, cap);
     }
     if (!Number.isFinite(minCap)) return 1000;
     return Math.max(1, Math.floor(minCap));
@@ -263,16 +357,16 @@
   function updateRangeLine(){
     const max = capacityMaxGiB || Number(sizeRange.max || 2000);
     const val = Number(sizeInput.value || 0);
-    rangeLine.textContent = `Range: 0–${max} GiB • Current value: ${val} GiB`;
+    rangeLine.textContent = tpl(I18N.range_line, { max, val });
   }
 
   function applyModeUI(){
     if (MODE === "write"){
       modeWriteBtn.classList.add("active");
       modeReadBtn.classList.remove("active");
-      sizeFieldLabel.textContent = "Write size (GiB)";
-      pageTitleH1.textContent = "External SSD Read & Write Time Calculator";
-      thSpeed.textContent = "Sustained Speed";
+      sizeFieldLabel.textContent = I18N.write_size;
+      pageTitleH1.textContent = I18N.title_rw;
+      thSpeed.textContent = I18N.speed_sustained;
 
       document.querySelectorAll(".calc-legendWrite").forEach(x => x.style.display = "");
       document.querySelectorAll(".calc-legendRead").forEach(x => x.style.display = "none");
@@ -280,9 +374,9 @@
     } else {
       modeReadBtn.classList.add("active");
       modeWriteBtn.classList.remove("active");
-      sizeFieldLabel.textContent = "Read size (GiB)";
-      pageTitleH1.textContent = "External SSD Read Time Calculator";
-      thSpeed.textContent = "Sequential Speed";
+      sizeFieldLabel.textContent = I18N.read_size;
+      pageTitleH1.textContent = I18N.title_r;
+      thSpeed.textContent = I18N.speed_sequential;
 
       document.querySelectorAll(".calc-legendWrite").forEach(x => x.style.display = "none");
       document.querySelectorAll(".calc-legendRead").forEach(x => x.style.display = "");
@@ -291,22 +385,22 @@
   }
 
   function calcWriteParts(sizeGiB, m){
-    const slcGiB = Number(m.slc_gib || 0);
-    const slcSpeed = Number(m.slc_speed || 0);
-    const susSpeed = Number(m.sus_speed || 0);
+    const slcGiB = toNum(m.slc_gib);
+    const slcSpeed = toNum(m.slc_speed);
+    const susSpeed = toNum(m.sus_speed);
 
     const slcPartGiB = Math.min(sizeGiB, slcGiB);
     const susPartGiB = Math.max(0, sizeGiB - slcPartGiB);
 
-    const slcSec = slcSpeed > 0 ? (slcPartGiB*MB) / slcSpeed : Infinity;
-    const susSec = susSpeed > 0 ? (susPartGiB*MB) / susSpeed : Infinity;
+    const slcSec = slcSpeed > 0 ? (slcPartGiB * MiB_PER_GiB) / slcSpeed : Infinity;
+    const susSec = susSpeed > 0 ? (susPartGiB * MiB_PER_GiB) / susSpeed : Infinity;
 
     return { slcPartGiB, susPartGiB, slcSec, susSec, totalSec: slcSec + susSec };
   }
 
   function calcReadSeconds(sizeGiB, m){
-    const seqSpeed = Number(m.seq_speed || 0);
-    return seqSpeed > 0 ? (sizeGiB*MB) / seqSpeed : Infinity;
+    const seqSpeed = toNum(m.seq_speed);
+    return seqSpeed > 0 ? (sizeGiB * MiB_PER_GiB) / seqSpeed : Infinity;
   }
 
   function sortByTime(list, sizeGiB){
@@ -401,9 +495,9 @@
 
   function render(){
     if (!MODELS.length){
-      summary.textContent = "No data";
-      details.textContent = "Reading /data/calculator.json";
-      tbody.innerHTML = `<tr><td colspan="8" class="calc-muted">No data</td></tr>`;
+      summary.textContent = I18N.no_data;
+      details.textContent = I18N.reading_json;
+      tbody.innerHTML = `<tr><td colspan="8" class="calc-muted">${I18N.no_data}</td></tr>`;
       drawChart([]);
       shownAllCount.textContent = "0";
       return;
@@ -415,9 +509,17 @@
     const best = sorted[0];
     const worst = sorted[sorted.length - 1];
 
-    summary.textContent = `Best time for ${sizeGiB} GiB: ${best.m.name} — ${humanTime(best.seconds)}`;
-    const diff = worst.seconds - best.seconds;
-    details.textContent = `Worst: ${worst.m.name} — ${humanTime(worst.seconds)} • Difference ≈ ${humanTime(diff)}`;
+    summary.textContent = tpl(I18N.summary_best, {
+      size: sizeGiB,
+      name: best.m.name,
+      time: humanTime(best.seconds),
+    });
+
+    details.textContent = tpl(I18N.summary_worst, {
+      name: worst.m.name,
+      time: humanTime(worst.seconds),
+      diff: humanTime(worst.seconds - best.seconds),
+    });
 
     drawChart(sorted);
 
@@ -426,10 +528,10 @@
       const m = row.m;
       const time = row.seconds;
 
-      const slcSpeed = Number(m.slc_speed || 0);
-      const slcGiB = Number(m.slc_gib || 0);
-      const susSpeed = Number(m.sus_speed || 0);
-      const seqSpeed = Number(m.seq_speed || 0);
+      const slcSpeed = toNum(m.slc_speed);
+      const slcGiB = toNum(m.slc_gib);
+      const susSpeed = toNum(m.sus_speed);
+      const seqSpeed = toNum(m.seq_speed);
 
       const slcPart = Math.min(sizeGiB, slcGiB);
       const susPart = Math.max(0, sizeGiB - slcPart);
@@ -457,27 +559,27 @@
 
     tbody.innerHTML = rowsHtml.join("");
     shownAllCount.textContent = String(sorted.length);
-
     updateRangeLine();
   }
 
   async function loadData(){
-    summary.textContent = "Loading data…";
-    details.textContent = "Reading /data/calculator.json";
-    tbody.innerHTML = `<tr><td colspan="8" class="calc-muted">Loading…</td></tr>`;
+    summary.textContent = I18N.loading_data;
+    details.textContent = I18N.reading_json;
+    tbody.innerHTML = `<tr><td colspan="8" class="calc-muted">${I18N.loading_data}</td></tr>`;
 
     try {
       const res = await fetch(`/data/calculator.json`, { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
-      MODELS = Array.isArray(data) ? data : [];
+      const rawArr = Array.isArray(data) ? data : [];
+      MODELS = rawArr.map(normalizeModel).filter(m => m && m.name);
+
       capacityMaxGiB = computeMaxGiB(MODELS);
+      sizeRange.max = String(capacityMaxGiB || 2000);
+      sizeInput.max = String(capacityMaxGiB || 2000);
 
-      sizeRange.max = String(capacityMaxGiB);
-      sizeInput.max = String(capacityMaxGiB);
-
-      const current = clamp(Number(sizeInput.value || 10), 1, capacityMaxGiB);
+      const current = clamp(Number(sizeInput.value || 10), 1, capacityMaxGiB || 2000);
       sizeInput.value = String(current);
       sizeRange.value = String(current);
 
@@ -485,9 +587,9 @@
       render();
     } catch (e){
       console.error(e);
-      summary.textContent = "Data load error";
+      summary.textContent = I18N.data_load_error;
       details.textContent = String(e);
-      tbody.innerHTML = `<tr><td colspan="8" class="calc-muted">Data load error: ${String(e)}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="calc-muted">${I18N.data_load_error}: ${String(e)}</td></tr>`;
       MODELS = [];
       capacityMaxGiB = 0;
       shownAllCount.textContent = "—";
@@ -509,12 +611,14 @@
   modeWriteBtn.addEventListener("click", () => {
     MODE = "write";
     applyModeUI();
+    updateRangeLine();
     render();
   });
 
   modeReadBtn.addEventListener("click", () => {
     MODE = "read";
     applyModeUI();
+    updateRangeLine();
     render();
   });
 

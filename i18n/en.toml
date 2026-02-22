@@ -1,0 +1,242 @@
+[site_tagline]
+other = "No marketing. Independent tests."
+
+[nav_data]
+other = "Data"
+
+[nav_reviews]
+other = "Reviews"
+
+[nav_best]
+other = "Best"
+
+[nav_methodology]
+other = "Methodology"
+
+[nav_calculators]
+other = "Calculators"
+
+[footer_tagline_line1]
+other = "No marketing. Independent tests."
+
+[footer_tagline_line2]
+other = "Raw measurements under a standardized methodology."
+
+[footer_copy]
+other = "© 2026 Eugen Standard"
+
+[footer_meta]
+other = "No sponsorship influence. No subjective scores."
+
+[home_title]
+other = "Data portal"
+
+[home_subtitle]
+other = "Independent raw benchmarks under a standardized methodology."
+
+[home_start_here]
+other = "Start here"
+
+[home_browse_category]
+other = "Browse by category."
+
+[home_external_ssd]
+other = "External SSDs"
+
+[home_how_read]
+other = "How to read the tables"
+
+[home_avg]
+other = "Average (Median) — main value to compare."
+
+[home_attempts]
+other = "Attempts — repeatability check."
+
+[home_fresh]
+other = "Fresh vs Sustained — cache vs long writes."
+
+[home_open_methodology]
+other = "Open methodology →"
+
+[home_latest]
+other = "Latest updates"
+
+[home_manual]
+other = "Manual list for now."
+
+[home_integrity]
+other = "Integrity"
+
+[home_integrity_1]
+other = "No sponsorship influence."
+
+[home_integrity_2]
+other = "Standardized test environment."
+
+[home_integrity_3]
+other = "Raw measurements (no “marketing scores”)."
+
+[data_test_unit_env]
+other = "Test unit & environment"
+
+[data_capacity_switch]
+other = "Capacity switch"
+
+[data_test_unit_photo]
+other = "Test unit photo"
+
+[data_last_updated]
+other = "Last updated"
+
+[list_no_items]
+other = "No items yet."
+
+[data_section_fresh_seq_write_250gib]
+other = "Sequential Write (250GiB)"
+
+[data_section_seq_read_250gib]
+other = "Sequential Read (250GiB)"
+
+[data_section_random_read_4k_qd1]
+other = "Random Read 4K QD1"
+
+[data_meta_ssd_model]
+other = "SSD model"
+
+[data_meta_capacity_gib]
+other = "Capacity (GiB)"
+
+[data_meta_serial_number]
+other = "Serial number"
+
+[data_meta_firmware]
+other = "Firmware"
+
+[data_meta_operating_system]
+other = "Operating system"
+
+[data_meta_fio_version]
+other = "Fio version"
+
+[data_col_metric]
+other = "Metric"
+
+[data_col_avg_median]
+other = "Average (Median)"
+
+[data_col_attempt1]
+other = "Attempt 1"
+
+[data_col_attempt2]
+other = "Attempt 2"
+
+[data_col_attempt3]
+other = "Attempt 3"
+
+[data_metric_avg_speed_mb_s]
+other = "Avg Speed (MB/s)"
+
+[data_metric_sustained_speed_mb_s]
+other = "Sustained Speed (MB/s)"
+
+[data_metric_slc_speed_mb_s]
+other = "SLC Speed (MB/s)"
+
+[data_metric_time_slc_sec]
+other = "Time SLC (sec)"
+
+[data_metric_slc_data_gib]
+other = "GiB (SLC data)"
+
+[data_metric_time_total_sec]
+other = "Time total (sec)"
+
+[data_metric_data_size_gib]
+other = "Data Size (GiB)"
+
+[data_metric_latency_p99_ms]
+other = "Latency p99 (ms)"
+
+[calc_title_rw]
+other = "External SSD Read & Write Time Calculator"
+
+[calc_title_r]
+other = "External SSD Read Time Calculator"
+
+[calc_mode]
+other = "Mode"
+
+[calc_write]
+other = "Write"
+
+[calc_read]
+other = "Read"
+
+[calc_write_size]
+other = "Write size (GiB)"
+
+[calc_read_size]
+other = "Read size (GiB)"
+
+[calc_range_line]
+other = "Range: 0–{max} GiB • Current value: {val} GiB"
+
+[calc_range_line_default]
+other = "Range: 0–2000 GiB • Current value: 10 GiB"
+
+[calc_legend_sustained]
+other = "Sustained"
+
+[calc_legend_sequential]
+other = "Sequential"
+
+[calc_th_model]
+other = "Model"
+
+[calc_th_slc_speed]
+other = "SLC speed"
+
+[calc_th_slc_size]
+other = "SLC size"
+
+[calc_th_speed_sustained]
+other = "Sustained speed"
+
+[calc_th_speed_sequential]
+other = "Sequential speed"
+
+[calc_th_slc_part]
+other = "SLC part"
+
+[calc_th_sus_part]
+other = "Sustained part"
+
+[calc_th_total_time]
+other = "Total time"
+
+[calc_show_all]
+other = "Show all models:"
+
+[calc_loading_data]
+other = "Loading data…"
+
+[calc_loading_row]
+other = "Loading…"
+
+[calc_reading_json]
+other = "Reading /data/calculator.json"
+
+[calc_no_data]
+other = "No data"
+
+[calc_data_load_error]
+other = "Data load error"
+
+[calc_summary_best]
+other = "Best time for {size} GiB: {name} — {time}"
+
+[calc_summary_worst]
+other = "Worst: {name} — {time} • Difference ≈ {diff}"
+
+[category.external-ssd]
+other = "External SSD"

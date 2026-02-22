@@ -1,27 +1,26 @@
 ﻿<footer class="site-footer">
   <div class="container footer-inner">
-
-    <div class="footer-left">
-      <div class="footer-title">{{ .Site.Title }}</div>
-      <div class="footer-lines">
-        <div>No marketing. Independent tests.</div>
-        <div>Raw measurements under a standardized methodology.</div>
+    <div class="footer-main">
+      <div class="footer-brand">
+        <div class="footer-title">{{ .Site.Title }}</div>
+        <div class="footer-tagline">
+          {{ i18n "footer_tagline_line1" }}<br>
+          {{ i18n "footer_tagline_line2" }}
+        </div>
       </div>
-      <small class="footer-copy muted">© {{ now.Format "2006" }} {{ .Site.Title }}</small>
-    </div>
 
-    <div class="footer-right">
-      <nav class="footnav" aria-label="Footer">
-        <a href="{{ "/data/" | relLangURL }}">Data</a>
-        <a href="{{ "/reviews/" | relLangURL }}">Reviews</a>
-        <a href="{{ "/best/" | relLangURL }}">Best</a>
-        <a href="{{ "/methodology/" | relLangURL }}">Methodology</a>
-        <a href="{{ "/calculators/" | relLangURL }}">Calculators</a>
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="{{ "/data/" | relLangURL }}">{{ i18n "nav_data" }}</a>
+        <a href="{{ "/reviews/" | relLangURL }}">{{ i18n "nav_reviews" }}</a>
+        <a href="{{ "/best/" | relLangURL }}">{{ i18n "nav_best" }}</a>
+        <a href="{{ "/methodology/" | relLangURL }}">{{ i18n "nav_methodology" }}</a>
+        <a href="{{ "/calculators/" | relLangURL }}">{{ i18n "nav_calculators" }}</a>
       </nav>
-      <div class="footer-meta muted">
-        No sponsorship influence. No subjective scores.
-      </div>
     </div>
 
+    <div class="footer-bottom">
+      <div class="footer-copy">{{ i18n "footer_copy" }}</div>
+      <div class="footer-meta">{{ i18n "footer_meta" }}</div>
+    </div>
   </div>
 </footer>

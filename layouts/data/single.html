@@ -1,9 +1,10 @@
 ﻿{{ define "main" }}
 
 {{/* =========================================================
-   Layer 1 (clean version):
-   Photo path auto-built from slugs:
-   external-ssd/{brand_slug}/{model_slug}/{capacity_slug}/unit.webp
+   Layer 1 (clean, i18n-safe):
+   - No dependence on English text inside .Content
+   - Content stores only keys in data-* attributes
+   - We render translated labels via i18n here
    ========================================================= */}}
 
 {{/* 1) imgBase from config */}}
@@ -23,8 +24,21 @@
 {{/* 3) Work with rendered HTML */}}
 {{ $c := .Content }}
 
-{{ $pattern := `(?s)^(.*?)(<h2>Test unit (?:&amp;|&) environment</h2>\s*<table class="meta-table".*?</table>)(.*)$` }}
-{{ $hasTestUnit := and (in $c "meta-table") (or (in $c "Test unit &amp; environment") (in $c "Test unit & environment")) }}
+{{/* Find first meta-table anywhere */}}
+{{ $metaRe := `(?s)<table class="meta-table".*?</table>` }}
+{{ $metaMatches := findRE $metaRe $c 1 }}
+{{ $hasMeta := gt (len $metaMatches) 0 }}
+{{ $metaTable := "" }}
+{{ if $hasMeta }}
+  {{ $metaTable = index $metaMatches 0 }}
+{{ end }}
+
+{{/* Remove optional <h2> right before meta-table + the meta-table itself (first occurrence only) */}}
+{{ $removeMetaBlockRe := `(?s)<h2>.*?</h2>\s*<table class="meta-table".*?</table>|<table class="meta-table".*?</table>` }}
+{{ $rest := $c }}
+{{ if $hasMeta }}
+  {{ $rest = replaceRE $removeMetaBlockRe "" $c 1 }}
+{{ end }}
 
 <article class="data-page">
 
@@ -49,7 +63,7 @@
     {{ $show2   := or (eq $cap "2tb")   $has2 }}
 
     {{ if or $show500 $show1 $show2 }}
-      <nav class="cap-switch" aria-label="Capacity switch">
+      <nav class="cap-switch" aria-label="{{ i18n "data_capacity_switch" }}">
         {{ if $show500 }}
           <a class="cap-btn {{ if eq $cap "500gb" }}is-active{{ end }}" href="{{ $seriesBase }}500gb/">500GB</a>
         {{ end }}
@@ -62,10 +76,7 @@
       </nav>
     {{ end }}
 
-    {{/* Lead text:
-        - prefer .Params.lead (markdown, linkable)
-        - fallback to .Params.description
-    */}}
+    {{/* Lead text */}}
     {{ with .Params.lead }}
       <p class="lead">{{ . | $.Page.RenderString }}</p>
     {{ else }}
@@ -77,21 +88,31 @@
 
   <section class="content">
 
-    {{ if and $hasTestUnit $brand $model $capacity }}
+    {{ if $hasMeta }}
 
-      {{ $before := replaceRE $pattern "$1" $c }}
-      {{ $block  := replaceRE $pattern "$2" $c }}
-      {{ $after  := replaceRE $pattern "$3" $c }}
-
-      {{ $h2 := replaceRE `(?s)^((?:<h2>.*?</h2>)).*` "$1" $block }}
-      {{ $table := replaceRE `(?s)^<h2>.*?</h2>\s*` "" $block }}
-
-      {{ $before | safeHTML }}
-      {{ $h2 | safeHTML }}
+      <h2>{{ i18n "data_test_unit_env" }}</h2>
 
       <div class="testunit-grid">
         <div class="testunit-left">
-          {{ $table | safeHTML }}
+
+          {{/* Translate meta labels: <th data-meta="x"></th> → <th>i18n</th> */}}
+          {{ $mt := $metaTable }}
+
+          {{ $metaKeys := findRE `data-meta="([^"]+)"` $mt 999 }}
+          {{ $metaSeen := dict }}
+
+          {{ range $metaKeys }}
+            {{ $k := replaceRE `^data-meta="([^"]+)".*$` `$1` . }}
+            {{ if not (index $metaSeen $k) }}
+              {{ $metaSeen = merge $metaSeen (dict $k true) }}
+              {{ $from := printf `<th data-meta="%s"></th>` $k }}
+              {{ $to := printf `<th>%s</th>` (i18n (printf "data_meta_%s" $k)) }}
+              {{ $mt = replaceRE $from $to $mt }}
+            {{ end }}
+          {{ end }}
+
+          {{ $mt | safeHTML }}
+
         </div>
 
         <div class="testunit-right">
@@ -100,14 +121,62 @@
               class="testunit-photo-img"
               src="{{ $photoURL }}"
               onerror="this.closest('.testunit-right').style.display='none';"
-              alt="{{ .Title }} - test unit photo"
+              alt="{{ i18n "data_test_unit_photo" }}"
               loading="lazy"
               decoding="async">
           </figure>
         </div>
       </div>
 
-      {{ $after | safeHTML }}
+      {{/* Find all data tables */}}
+      {{ $tables := findRE `(?s)<table class="data-table"[^>]*data-test="[^"]+"[^>]*>.*?</table>` $rest 999 }}
+
+      {{ if gt (len $tables) 0 }}
+        {{ range $tables }}
+          {{ $t := . }}
+
+          {{/* Section heading from data-test */}}
+          {{ $m := findRE `data-test="([^"]+)"` $t 1 }}
+          {{ $key := "" }}
+          {{ if gt (len $m) 0 }}
+            {{ $key = replaceRE `^data-test="([^"]+)".*$` `$1` (index $m 0) }}
+          {{ end }}
+
+          {{ if $key }}
+            <h2>{{ i18n (printf "data_section_%s" $key) }}</h2>
+          {{ end }}
+
+          {{/* Translate column headers: <th data-col="x"></th> */}}
+          {{ $colKeys := findRE `data-col="([^"]+)"` $t 999 }}
+          {{ $colSeen := dict }}
+          {{ range $colKeys }}
+            {{ $ck := replaceRE `^data-col="([^"]+)".*$` `$1` . }}
+            {{ if not (index $colSeen $ck) }}
+              {{ $colSeen = merge $colSeen (dict $ck true) }}
+              {{ $from := printf `<th data-col="%s"></th>` $ck }}
+              {{ $to := printf `<th>%s</th>` (i18n (printf "data_col_%s" $ck)) }}
+              {{ $t = replaceRE $from $to $t }}
+            {{ end }}
+          {{ end }}
+
+          {{/* Translate metric labels: <td data-metric="x"></td> */}}
+          {{ $metricKeys := findRE `data-metric="([^"]+)"` $t 999 }}
+          {{ $metricSeen := dict }}
+          {{ range $metricKeys }}
+            {{ $mk := replaceRE `^data-metric="([^"]+)".*$` `$1` . }}
+            {{ if not (index $metricSeen $mk) }}
+              {{ $metricSeen = merge $metricSeen (dict $mk true) }}
+              {{ $from := printf `<td data-metric="%s"></td>` $mk }}
+              {{ $to := printf `<td>%s</td>` (i18n (printf "data_metric_%s" $mk)) }}
+              {{ $t = replaceRE $from $to $t }}
+            {{ end }}
+          {{ end }}
+
+          {{ $t | safeHTML }}
+        {{ end }}
+      {{ else }}
+        {{ $rest | safeHTML }}
+      {{ end }}
 
     {{ else }}
 
@@ -119,7 +188,7 @@
 
   <footer class="meta">
     {{ with .Lastmod }}
-      <p class="small muted">Last updated: {{ .Format "2006-01-02" }}</p>
+      <p class="small muted">{{ i18n "data_last_updated" }}: {{ .Format "2006-01-02" }}</p>
     {{ end }}
   </footer>
 

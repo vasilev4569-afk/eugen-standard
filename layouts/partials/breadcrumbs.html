@@ -13,27 +13,36 @@
   {{- if eq $lang "fr" -}}{{- $labelHome = "Accueil" -}}{{- end -}}
   {{- if eq $lang "ru" -}}{{- $labelHome = "Главная" -}}{{- end -}}
 
-
   {{- $crumbs := slice -}}
   {{- $crumbs = $crumbs | append (dict "title" $labelHome "url" .Site.Home.RelPermalink) -}}
 
   {{- range .Ancestors.Reverse -}}
     {{- if and (ne .RelPermalink $.Site.Home.RelPermalink) (ne .Title "") -}}
-      {{- $crumbs = $crumbs | append (dict "title" .Title "url" .RelPermalink) -}}
+      {{- $p := site.GetPage .RelPermalink -}}
+      {{- if not $p -}}{{- $p = . -}}{{- end -}}
+
+      {{- $t := $p.Title -}}
+      {{- with $p.Params.breadcrumbTitle -}}
+        {{- if ne . "" -}}{{- $t = . -}}{{- end -}}
+      {{- end -}}
+
+      {{- $crumbs = $crumbs | append (dict "title" $t "url" $p.RelPermalink) -}}
     {{- end -}}
   {{- end -}}
 
-    {{- /* Current page crumb: for capacity leaf pages show only "1TB" etc. */ -}}
+  {{- /* Current page crumb:
+        - capacity leaf pages: "1TB"
+        - model pages: use breadcrumbTitle if present (e.g., "T7")
+        - else: .Title */ -}}
   {{- $currentTitle := .Title -}}
   {{- with .Params.capacity_label -}}
     {{- $currentTitle = . -}}
   {{- else -}}
-    {{- with .Params.capacity_slug -}}
-      {{- $currentTitle = . -}}
+    {{- with .Params.breadcrumbTitle -}}
+      {{- if ne . "" -}}{{- $currentTitle = . -}}{{- end -}}
     {{- end -}}
   {{- end -}}
   {{- $crumbs = $crumbs | append (dict "title" $currentTitle "url" .RelPermalink) -}}
-
 
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <ol>

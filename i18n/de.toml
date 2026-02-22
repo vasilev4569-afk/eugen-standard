@@ -1,0 +1,242 @@
+[site_tagline]
+other = "Kein Marketing. Unabhängige Tests."
+
+[nav_data]
+other = "Daten"
+
+[nav_reviews]
+other = "Reviews"
+
+[nav_best]
+other = "Bestenliste"
+
+[nav_methodology]
+other = "Methodik"
+
+[nav_calculators]
+other = "Rechner"
+
+[footer_tagline_line1]
+other = "Kein Marketing. Unabhängige Tests."
+
+[footer_tagline_line2]
+other = "Rohdaten unter einer standardisierten Methodik."
+
+[footer_copy]
+other = "© 2026 Eugen Standard"
+
+[footer_meta]
+other = "Kein Sponsoring-Einfluss. Keine subjektiven Bewertungen."
+
+[home_title]
+other = "Datenportal"
+
+[home_subtitle]
+other = "Unabhängige Roh-Benchmarks unter standardisierter Methodik."
+
+[home_start_here]
+other = "Hier starten"
+
+[home_browse_category]
+other = "Nach Kategorie durchsuchen."
+
+[home_external_ssd]
+other = "Externe SSDs"
+
+[home_how_read]
+other = "Wie man die Tabellen liest"
+
+[home_avg]
+other = "Durchschnitt (Median) — Hauptwert zum Vergleichen."
+
+[home_attempts]
+other = "Versuche — Prüfung der Wiederholbarkeit."
+
+[home_fresh]
+other = "Fresh vs Sustained — Cache vs Langzeitschreiben."
+
+[home_open_methodology]
+other = "Methodik öffnen →"
+
+[home_latest]
+other = "Neueste Updates"
+
+[home_manual]
+other = "Derzeit manuelle Liste."
+
+[home_integrity]
+other = "Integrität"
+
+[home_integrity_1]
+other = "Kein Sponsoring-Einfluss."
+
+[home_integrity_2]
+other = "Standardisierte Testumgebung."
+
+[home_integrity_3]
+other = "Rohmessungen (keine „Marketing-Scores“)."
+
+[data_test_unit_env]
+other = "Testgerät & Testumgebung"
+
+[data_capacity_switch]
+other = "Kapazität wählen"
+
+[data_test_unit_photo]
+other = "Foto des Testgeräts"
+
+[data_last_updated]
+other = "Zuletzt aktualisiert"
+
+[list_no_items]
+other = "Noch keine Einträge."
+
+[data_section_fresh_seq_write_250gib]
+other = "Sequentielles Schreiben (250GiB)"
+
+[data_section_seq_read_250gib]
+other = "Sequentielles Lesen (250GiB)"
+
+[data_section_random_read_4k_qd1]
+other = "Zufälliges Lesen 4K QD1"
+
+[data_meta_ssd_model]
+other = "SSD-Modell"
+
+[data_meta_capacity_gib]
+other = "Kapazität (GiB)"
+
+[data_meta_serial_number]
+other = "Seriennummer"
+
+[data_meta_firmware]
+other = "Firmware"
+
+[data_meta_operating_system]
+other = "Betriebssystem"
+
+[data_meta_fio_version]
+other = "Fio-Version"
+
+[data_col_metric]
+other = "Metrik"
+
+[data_col_avg_median]
+other = "Durchschnitt (Median)"
+
+[data_col_attempt1]
+other = "Versuch 1"
+
+[data_col_attempt2]
+other = "Versuch 2"
+
+[data_col_attempt3]
+other = "Versuch 3"
+
+[data_metric_avg_speed_mb_s]
+other = "Mittl. Transferrate (MB/s)"
+
+[data_metric_sustained_speed_mb_s]
+other = "Konst. Transferrate (MB/s)"
+
+[data_metric_slc_speed_mb_s]
+other = "SLC-Rate (MB/s)"
+
+[data_metric_time_slc_sec]
+other = "SLC-Zeit (s)"
+
+[data_metric_slc_data_gib]
+other = "GiB (SLC-Daten)"
+
+[data_metric_time_total_sec]
+other = "Gesamtzeit (s)"
+
+[data_metric_data_size_gib]
+other = "Daten (GiB)"
+
+[data_metric_latency_p99_ms]
+other = "Latenz p99 (ms)"
+
+[calc_title_rw]
+other = "Externe SSD: Lese- & Schreibzeit-Rechner"
+
+[calc_title_r]
+other = "Externe SSD: Lesezeit-Rechner"
+
+[calc_mode]
+other = "Modus"
+
+[calc_write]
+other = "Schreiben"
+
+[calc_read]
+other = "Lesen"
+
+[calc_write_size]
+other = "Schreibmenge (GiB)"
+
+[calc_read_size]
+other = "Lesemenge (GiB)"
+
+[calc_range_line]
+other = "Bereich: 0–{max} GiB • Aktueller Wert: {val} GiB"
+
+[calc_range_line_default]
+other = "Bereich: 0–2000 GiB • Aktueller Wert: 10 GiB"
+
+[calc_legend_sustained]
+other = "Sustained"
+
+[calc_legend_sequential]
+other = "Sequenziell"
+
+[calc_th_model]
+other = "Modell"
+
+[calc_th_slc_speed]
+other = "SLC-Speed"
+
+[calc_th_slc_size]
+other = "SLC-Größe"
+
+[calc_th_speed_sustained]
+other = "Sustained-Speed"
+
+[calc_th_speed_sequential]
+other = "Sequenzielle Geschwindigkeit"
+
+[calc_th_slc_part]
+other = "SLC-Anteil"
+
+[calc_th_sus_part]
+other = "Sustained-Anteil"
+
+[calc_th_total_time]
+other = "Gesamtzeit"
+
+[calc_show_all]
+other = "Alle Modelle anzeigen:"
+
+[calc_loading_data]
+other = "Daten werden geladen…"
+
+[calc_loading_row]
+other = "Lädt…"
+
+[calc_reading_json]
+other = "Lese /data/calculator.json"
+
+[calc_no_data]
+other = "Keine Daten"
+
+[calc_data_load_error]
+other = "Fehler beim Laden der Daten"
+
+[calc_summary_best]
+other = "Beste Zeit für {size} GiB: {name} — {time}"
+
+[calc_summary_worst]
+other = "Schlechteste: {name} — {time} • Unterschied ≈ {diff}"
+
+[category.external-ssd]
+other = "Externe SSD"

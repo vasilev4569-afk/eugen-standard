@@ -2,17 +2,29 @@
 # -*- coding: utf-8 -*-
 
 import csv
-import re
 import json
+import re
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 from urllib.request import urlopen
-from datetime import datetime, timezone
 
 CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSNY87-WIChWcLHd8Ilyx4Smy8hxRC690C4wjhb_yLgfi3uooSD91Pw6TZiK83n269O8AC_3koMsI1-/pub?gid=0&single=true&output=csv"
 
 OUT_ROOT = Path("content")
+TARGET_LANGS = ("en", "de")
+FALLBACK_TO_EN_IF_MISSING = True
 
+CALC_SECTION_DIR = Path("calculators")
+CALC_SLUG = "external-ssd-read-write-time-calculator"
+CALC_REL_DIR = CALC_SECTION_DIR / CALC_SLUG
+
+# For Hugo translation linking (language switch, relref stability, etc.)
+CALC_TRANSLATION_KEY = "calc-external-ssd-read-write-time"
+
+
+# -------------------------
+# CSV helpers
+# -------------------------
 
 def norm_header(h: str) -> str:
     h = (h or "").strip()
@@ -30,418 +42,446 @@ def read_csv(url: str) -> List[Dict[str, str]]:
         return []
 
     headers = [norm_header(h) for h in rows[0]]
-    data: List[Dict[str, str]] = []
-
-    for r in rows[1:]:
-        if len(r) < len(headers):
-            r = r + [""] * (len(headers) - len(r))
-        item = {headers[i]: (r[i].strip() if i < len(r) else "") for i in range(len(headers))}
-        if all(v == "" for v in item.values()):
-            continue
-        data.append(item)
-
-    return data
+    out: List[Dict[str, str]] = []
+    for line in rows[1:]:
+        d: Dict[str, str] = {}
+        for i, h in enumerate(headers):
+            d[h] = (line[i] if i < len(line) else "").strip()
+        out.append(d)
+    return out
 
 
 def truthy(v: str) -> bool:
     return str(v).strip().lower() in ("true", "1", "yes")
 
 
-def esc_html(s: str) -> str:
-    return (
-        s.replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace('"', "&quot;")
-    )
+def slugify(s: str) -> str:
+    s = (s or "").strip().lower()
+    s = re.sub(r"[^a-z0-9]+", "-", s)
+    s = re.sub(r"-{2,}", "-", s).strip("-")
+    return s
 
 
-def parse_number(s: str):
+def humanize_slug(s: str) -> str:
     """
-    Parse first float/int from string.
-    Examples:
-      "511" -> 511.0
-      "511 (516)" -> 511.0
-      "" -> None
+    external-ssd -> External SSD
+    usb-cable -> Usb Cable (ok as fallback)
     """
-    if s is None:
-        return None
-    t = str(s).strip()
-    if not t:
-        return None
-    m = re.search(r"-?\d+(?:\.\d+)?", t.replace(",", "."))
-    if not m:
+    s = (s or "").strip()
+    if not s:
+        return s
+    parts = re.split(r"[-_]+", s)
+    out: List[str] = []
+    for p in parts:
+        if not p:
+            continue
+        u = p.upper()
+        if u in {"SSD", "HDD", "USB", "NVME", "TB", "GB", "MB", "KIO", "GIB"}:
+            out.append(u)
+        else:
+            out.append(p[:1].upper() + p[1:].lower())
+    return " ".join(out)
+
+
+def split_rows_by_lang(rows: List[Dict[str, str]], default_lang: str = "en") -> Dict[str, List[Dict[str, str]]]:
+    by: Dict[str, List[Dict[str, str]]] = {}
+    for r in rows:
+        lang = (r.get("lang") or "").strip().lower() or default_lang
+        r["lang"] = lang
+        by.setdefault(lang, []).append(r)
+    return by
+
+
+def html_escape(s: str) -> str:
+    return (s or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def fnum(x: str) -> Optional[float]:
+    x = (x or "").strip()
+    if not x:
         return None
     try:
-        return float(m.group(0))
+        return float(x)
     except Exception:
-        return None
+        try:
+            return float(x.replace(",", "."))
+        except Exception:
+            return None
 
 
-# ==========================
-# CALCULATOR JSON GENERATION
-# ==========================
+def atomic_write_text(path: Path, text: str, encoding: str = "utf-8") -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(text, encoding=encoding, newline="\n")
+    tmp.replace(path)
+
+
+# -------------------------
+# Calculator JSON
+# -------------------------
 
 def build_calculator_json(rows: List[Dict[str, str]]) -> List[Dict]:
     """
-    Builds calculator models from SAME table.
+    Build a single JSON used by calculator UI.
+    Reads from EN rows (recommended) to avoid duplicates if DE appears later.
 
-    section_key:
-      - fresh_seq_write_250gib => slc_speed, sus_speed, slc_gib
-      - seq_read_250gib        => seq_speed
-
-    Values:
-      - use avg (preferred)
-      - fallback: parse first number from avg_median (e.g. "511 (516)" -> 511)
+    Uses:
+      section_key: fresh_seq_write_250gib, seq_read_250gib
+      metric_key : slc_speed_mb_s, sustained_speed_mb_s, slc_data_gib, avg_speed_mb_s
+      avg_median : numeric
     """
-    models: Dict[str, Dict] = {}
+
+    def pick(model_rows: List[Dict[str, str]], section_key: str, metric_key: str) -> Optional[float]:
+        for rr in model_rows:
+            if (rr.get("section_key") or "").strip() == section_key and (rr.get("metric_key") or "").strip() == metric_key:
+                return fnum(rr.get("avg_median") or "")
+        return None
+
+    grouped: Dict[str, List[Dict[str, str]]] = {}
+    meta: Dict[str, Dict[str, str]] = {}
 
     for r in rows:
-        section = (r.get("section_key") or "").strip()
-        metric_key = (r.get("metric_key") or "").strip().lower()
-        metric_label = (r.get("metric_label") or "").strip().lower()
+        category = (r.get("category") or "").strip()
+        brand_slug = (r.get("brand_slug") or "").strip()
+        model_slug = (r.get("model_slug") or "").strip()
+        cap_slug = (r.get("capacity_slug") or "").strip()
 
-        key = (
-            (r.get("brand_slug") or "").strip(),
-            (r.get("model_slug") or "").strip(),
-            (r.get("capacity_slug") or "").strip(),
-            (r.get("lang") or "").strip(),
-        )
-        if not all(key):
+        if not (category and brand_slug and model_slug and cap_slug):
             continue
 
-        model_id = "_".join(key)
+        key = f"{category}/{brand_slug}/{model_slug}/{cap_slug}"
+        grouped.setdefault(key, []).append(r)
 
-        # capacity (GiB) comes from the source table (same for all rows of a model)
-        cap_gib = parse_number(r.get("capacity_gib"))
-        if isinstance(cap_gib, float) and cap_gib.is_integer():
-            cap_gib = int(cap_gib)
-
-        if model_id not in models:
-            models[model_id] = {
-                "model_id": model_id,
-                "name": f'{(r.get("brand") or "").strip()} {(r.get("model") or "").strip()} {(r.get("capacity_label") or "").strip()}',
-                "capacity_gib": cap_gib,
-                "slc_speed": None,
-                "slc_gib": None,
-                "sus_speed": None,
-                "seq_speed": None,
+        if key not in meta:
+            meta[key] = {
+                "category": category,
+                "brand": (r.get("brand") or "").strip(),
+                "model": (r.get("model") or "").strip(),
+                "capacity_label": (r.get("capacity_label") or "").strip(),
+                "brand_slug": brand_slug,
+                "model_slug": model_slug,
+                "capacity_slug": cap_slug,
             }
-        else:
-            if models[model_id].get("capacity_gib") is None and cap_gib is not None:
-                models[model_id]["capacity_gib"] = cap_gib
 
-        value = parse_number(r.get("avg"))
-        if value is None:
-            value = parse_number(r.get("avg_median"))
-        if value is None:
-            continue
+    out: List[Dict] = []
+    for key in sorted(grouped.keys()):
+        rs = grouped[key]
+        m = meta[key]
 
-        is_avg_speed = ("avg_speed" in metric_key) or ("avg speed" in metric_label)
-        is_slc_speed = ("slc_speed" in metric_key) or ("slc speed" in metric_label)
-        is_sustained = ("sustained" in metric_key) or ("sustained" in metric_label)
-        is_slc_gib = (
-            ("slc" in metric_key and "gib" in metric_key)
-            or ("gib" in metric_label and "slc" in metric_label)
-        )
+        slc_speed = pick(rs, "fresh_seq_write_250gib", "slc_speed_mb_s")
+        sustained_speed = pick(rs, "fresh_seq_write_250gib", "sustained_speed_mb_s")
+        slc_size_gib = pick(rs, "fresh_seq_write_250gib", "slc_data_gib")
+        read_speed = pick(rs, "seq_read_250gib", "avg_speed_mb_s")
 
-        if section == "fresh_seq_write_250gib":
-            if is_slc_speed:
-                models[model_id]["slc_speed"] = value
-            elif is_sustained:
-                models[model_id]["sus_speed"] = value
-            elif is_slc_gib:
-                models[model_id]["slc_gib"] = value
+        item = {
+            "id": f"{m['brand_slug']}_{m['model_slug']}_{m['capacity_slug']}",
+            "name": f"{m['brand']} {m['model']} {m['capacity_label']}".strip(),
 
-        if section == "seq_read_250gib":
-            if is_avg_speed:
-                models[model_id]["seq_speed"] = value
+            **m,
 
-    result = [
-        m for m in models.values()
-        if (
-            m.get("capacity_gib") is not None and
-            m["slc_speed"] is not None and
-            m["slc_gib"] is not None and
-            m["sus_speed"] is not None and
-            m["seq_speed"] is not None
-        )
-    ]
-    return result
+            "slc_speed": slc_speed,
+            "slc_size_gib": slc_size_gib,
+            "sustained_speed": sustained_speed,
+            "read_speed": read_speed,
+
+            "slcSpeed": slc_speed,
+            "slcGiB": slc_size_gib,
+            "sustainedSpeed": sustained_speed,
+            "readSpeed": read_speed,
+        }
+        out.append(item)
+
+    return out
 
 
 def write_calculator_json(models: List[Dict]) -> None:
     out_file = Path("static/data/calculator.json")
     out_file.parent.mkdir(parents=True, exist_ok=True)
-
     tmp_file = out_file.with_suffix(out_file.suffix + ".tmp")
-    tmp_file.write_text(
-        json.dumps(models, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8"
-    )
+    tmp_file.write_text(json.dumps(models, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     tmp_file.replace(out_file)
-
     print(f"Calculator JSON generated: {out_file}")
 
 
-# ==========================
-# CALCULATOR PAGE GENERATION
-# ==========================
+# -------------------------
+# Calculator pages Markdown (EN+DE) + calculators/_index.md
+# -------------------------
 
-def now_rfc3339() -> str:
-    try:
-        dt = datetime.now().astimezone()
-    except Exception:
-        dt = datetime.now(timezone.utc)
-    return dt.replace(microsecond=0).isoformat()
+def build_calculators_section_index_md(lang: str) -> str:
+    if lang == "de":
+        title = "Rechner"
+        description = "Tools zur Berechnung von Zeiten und Geschwindigkeiten basierend auf echten Messdaten."
+    else:
+        title = "Calculators"
+        description = "Tools to estimate times and speeds based on real measurements."
 
-
-def collect_calculators(rows: List[Dict[str, str]]) -> Dict[Tuple[str, str], str]:
-    """
-    Returns {(lang, calc_slug): calc_name} deduped from the same published table.
-    Because calc_* repeats for every metric row, we dedupe by (lang, slug).
-    """
-    out: Dict[Tuple[str, str], str] = {}
-    for r in rows:
-        lang = (r.get("lang") or "").strip()
-        slug = (r.get("calc_slug") or "").strip()
-        name = (r.get("calc_name") or "").strip()
-        if not (lang and slug and name):
-            continue
-        out[(lang, slug)] = name
-    return out
-
-
-def build_calc_md(title: str) -> str:
-    """
-    Minimal MD page for Hugo.
-    IMPORTANT: uses layouts/_default/calculator.html via:
-      type: "calculator"
-      layout: "calculator"
-    """
-    t = (title or "").replace('"', r"\"")
-    dt = now_rfc3339()
-
-    # даты без кавычек — как ты хотел
     return "\n".join([
         "---",
-        f'title: "{t}"',
-        'type: "calculator"',
-        'layout: "calculator"',
-        f"date: {dt}",
-        f"lastmod: {dt}",
+        f'title: "{title}"',
+        f'description: "{description}"',
         "---",
         "",
     ])
 
 
-def write_calculator_pages(calcs: Dict[Tuple[str, str], str]) -> None:
-    """
-    Writes content/<lang>/calculators/<calc_slug>.md for each calculator.
-    Overwrites on every run.
-    Removes old calculator md files not present in current set (per lang),
-    excluding _index.md.
-    """
-    by_lang: Dict[str, Dict[str, str]] = {}
-    for (lang, slug), name in calcs.items():
-        by_lang.setdefault(lang, {})[slug] = name
+def write_calculators_section_index_pages() -> None:
+    for lang in TARGET_LANGS:
+        out_file = OUT_ROOT / lang / CALC_SECTION_DIR / "_index.md"
+        atomic_write_text(out_file, build_calculators_section_index_md(lang))
+        print(f"Calculators section index: {out_file}")
 
-    for lang, items in by_lang.items():
-        out_dir = OUT_ROOT / lang / "calculators"
+
+def build_calculator_md(lang: str) -> str:
+    if lang == "de":
+        title = "External SSD Lese- & Schreibzeit-Rechner"
+        description = "Berechne reale Lese- und Schreibzeiten basierend auf SLC-Cache und Sustained Speed."
+    else:
+        title = "External SSD Read & Write Time Calculator"
+        description = "Calculate real read/write times based on SLC cache and sustained speed."
+
+    lines: List[str] = []
+    lines.append("---")
+    lines.append(f'title: "{title}"')
+    lines.append(f'description: "{description}"')
+    lines.append(f'translationKey: "{CALC_TRANSLATION_KEY}"')
+    lines.append('layout: "calculator"')
+    lines.append(f'slug: "{CALC_SLUG}"')
+    lines.append("---")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def write_calculator_pages() -> None:
+    for lang in TARGET_LANGS:
+        out_dir = OUT_ROOT / lang / CALC_REL_DIR
         out_dir.mkdir(parents=True, exist_ok=True)
-
-        # write/update
-        for slug, name in sorted(items.items()):
-            out_file = out_dir / f"{slug}.md"
-            out_file.write_text(build_calc_md(name), encoding="utf-8")
-            print(f"Calculator page: {out_file}")
-
-        # cleanup
-        keep = {f"{slug}.md" for slug in items.keys()}
-        for p in out_dir.glob("*.md"):
-            if p.name == "_index.md":
-                continue
-            if p.name not in keep:
-                try:
-                    p.unlink()
-                    print(f"Removed old calculator page: {p}")
-                except Exception as e:
-                    print(f"WARNING: failed to remove {p}: {e}")
+        out_file = out_dir / "index.md"
+        atomic_write_text(out_file, build_calculator_md(lang))
+        print(f"Calculator page: {out_file}")
 
 
-# ==========================
-# ORIGINAL DATA PAGE GENERATION
-# ==========================
+# -------------------------
+# Data pages Markdown generation (i18n-safe keys in data-attrs)
+# -------------------------
 
 def build_md(page_rows: List[Dict[str, str]]) -> str:
     r0 = page_rows[0]
 
-    lang = (r0.get("lang") or "").strip() or "en"
+    brand = (r0.get("brand") or "").strip()
+    model = (r0.get("model") or "").strip()
+    cap_label = (r0.get("capacity_label") or "").strip()
 
-    brand = r0.get("brand", "").strip()
-    model = r0.get("model", "").strip()
-    cap_label = r0.get("capacity_label", "").strip()
-
-    brand_slug = r0.get("brand_slug", "").strip()
-    model_slug = r0.get("model_slug", "").strip()
-    capacity_slug = r0.get("capacity_slug", "").strip()
+    brand_slug = (r0.get("brand_slug") or "").strip()
+    model_slug = (r0.get("model_slug") or "").strip()
+    cap_slug = (r0.get("capacity_slug") or "").strip()
 
     title = f"{brand} {model} {cap_label} - Raw Test Data"
-
-    # Plain text for meta tags (do NOT put markdown here)
     description = (
-        f"Independent technical performance measurements of the "
-        f"{brand} {model} {cap_label} conducted in a controlled test "
-        f"environment in accordance with the standardized Eugen Standard methodology."
+        f"Independent technical performance measurements of the {brand} {model} {cap_label} "
+        f"conducted in a controlled test environment in accordance with the standardized Eugen Standard methodology."
     )
 
-    # Markdown lead for on-page rendering (linkable)
-    methodology_url = f"/{lang}/methodology/"
-    lead = (
-        f"Independent technical performance measurements of the "
-        f"{brand} {model} {cap_label} conducted in a controlled test "
-        f"environment in accordance with the standardized Eugen Standard "
-        f"[methodology]({methodology_url})."
-    )
+    capacity_gib = (r0.get("capacity_gib") or "").strip()
+    serial_number = (r0.get("serial_number") or "").strip()
+    firmware = (r0.get("firmware") or "").strip()
+    operating_system = (r0.get("operating_system") or "").strip()
+    fio_version = (r0.get("fio_version") or "").strip()
 
-    capacity_gib = r0.get("capacity_gib", "")
-    serial_number = r0.get("serial_number", "")
-    firmware = r0.get("firmware", "")
-    operating_system = r0.get("operating_system", "")
-    fio_version = r0.get("fio_version", "")
-
-    sections: Dict[str, List[Dict[str, str]]] = {}
-    for rr in page_rows:
-        sk = rr.get("section_key", "")
+    sections: Dict[Tuple[str, str], List[Dict[str, str]]] = {}
+    for r in page_rows:
+        sk = (r.get("section_key") or "").strip()
+        st = (r.get("section_title") or "").strip()
         if not sk:
             continue
-        sections.setdefault(sk, []).append(rr)
+        sections.setdefault((sk, st), []).append(r)
 
-    html: List[str] = []
-    html.append("{{< rawhtml >}}")
-    html.append("")
-    html.append("<h2>Test unit &amp; environment</h2>")
-    html.append('<table class="meta-table"><tbody>')
-    html.append(f"<tr><th>SSD model</th><td>{esc_html(brand + ' ' + model)}</td></tr>")
-    html.append(f"<tr><th>Capacity (GiB)</th><td>{esc_html(capacity_gib)}</td></tr>")
-    html.append(f"<tr><th>Serial number</th><td>{esc_html(serial_number)}</td></tr>")
-    html.append(f"<tr><th>Firmware</th><td>{esc_html(firmware)}</td></tr>")
-    html.append(f"<tr><th>Operating system</th><td>{esc_html(operating_system)}</td></tr>")
-    html.append(f"<tr><th>Fio version</th><td>{esc_html(fio_version)}</td></tr>")
-    html.append("</tbody></table>")
+    section_items = sorted(sections.items(), key=lambda kv: (kv[0][0], kv[0][1]))
 
-    for sk, rows in sections.items():
-        section_title = rows[0].get("section_title", sk)
-        html.append(f"<h2>{esc_html(section_title)}</h2>")
-        html.append('<table class="data-table">')
-        html.append("<thead><tr>")
-        html.append("<th>Metric</th>")
-        html.append("<th>Average (Median)</th>")
-        html.append("<th>Attempt 1</th><th>Attempt 2</th><th>Attempt 3</th>")
-        html.append("</tr></thead><tbody>")
+    lines: List[str] = []
+    lines.append("---")
+    lines.append(f'title: "{title}"')
+    lines.append(f'description: "{description}"')
+    lines.append(
+        f'lead: "Independent technical performance measurements of the {brand} {model} {cap_label} conducted in a controlled test environment in accordance with the standardized Eugen Standard [methodology](/en/methodology/)."'
+    )
+    lines.append(f'brand: "{brand}"')
+    lines.append(f'model: "{model}"')
+    lines.append(f'brand_slug: "{brand_slug}"')
+    lines.append(f'model_slug: "{model_slug}"')
+    lines.append(f'capacity_label: "{cap_label}"')
+    lines.append(f'capacity_slug: "{cap_slug}"')
+    lines.append("---")
+    lines.append("")
+    lines.append("{{< rawhtml >}}")
+    lines.append("")
 
-        for rr in rows:
-            html.append(
-                f"<tr><td>{esc_html(rr.get('metric_label',''))}</td>"
-                f"<td class='kpi'>{esc_html(rr.get('avg_median',''))}</td>"
-                f"<td>{esc_html(rr.get('attempt1_value',''))}</td>"
-                f"<td>{esc_html(rr.get('attempt2_value',''))}</td>"
-                f"<td>{esc_html(rr.get('attempt3_value',''))}</td></tr>"
+    lines.append('<table class="meta-table"><tbody>')
+    lines.append(f'<tr><th data-meta="ssd_model"></th><td>{html_escape(brand)} {html_escape(model)}</td></tr>')
+    if capacity_gib:
+        lines.append(f'<tr><th data-meta="capacity_gib"></th><td>{html_escape(capacity_gib)}</td></tr>')
+    if serial_number:
+        lines.append(f'<tr><th data-meta="serial_number"></th><td>{html_escape(serial_number)}</td></tr>')
+    if firmware:
+        lines.append(f'<tr><th data-meta="firmware"></th><td>{html_escape(firmware)}</td></tr>')
+    if operating_system:
+        lines.append(f'<tr><th data-meta="operating_system"></th><td>{html_escape(operating_system)}</td></tr>')
+    if fio_version:
+        lines.append(f'<tr><th data-meta="fio_version"></th><td>{html_escape(fio_version)}</td></tr>')
+    lines.append("</tbody></table>")
+    lines.append("")
+
+    for (section_key, _section_title), rows in section_items:
+        lines.append(f'<table class="data-table" data-test="{html_escape(section_key)}">')
+        lines.append("<thead><tr>")
+        lines.append('<th data-col="metric"></th>')
+        lines.append('<th data-col="avg_median"></th>')
+        lines.append('<th data-col="attempt1"></th><th data-col="attempt2"></th><th data-col="attempt3"></th>')
+        lines.append("</tr></thead><tbody>")
+
+        for r in rows:
+            metric_key = (r.get("metric_key") or "").strip()
+            metric_label = (r.get("metric_label") or "").strip()
+            mk = metric_key or slugify(metric_label) or "metric"
+
+            avg = (r.get("avg_median") or "").strip()
+            a1 = (r.get("attempt1_value") or "").strip()
+            a2 = (r.get("attempt2_value") or "").strip()
+            a3 = (r.get("attempt3_value") or "").strip()
+
+            lines.append(
+                "<tr>"
+                f'<td data-metric="{html_escape(mk)}"></td>'
+                f"<td class='kpi'>{html_escape(avg)}</td>"
+                f"<td>{html_escape(a1)}</td>"
+                f"<td>{html_escape(a2)}</td>"
+                f"<td>{html_escape(a3)}</td>"
+                "</tr>"
             )
 
-        html.append("</tbody></table>")
+        lines.append("</tbody></table>")
+        lines.append("")
 
-    html.append("{{< /rawhtml >}}")
-
-    front = [
-        "---",
-        f'title: "{title}"',
-        f'description: "{description}"',
-        f'lead: "{lead}"',
-        f'brand: "{brand}"',
-        f'model: "{model}"',
-        f'brand_slug: "{brand_slug}"',
-        f'model_slug: "{model_slug}"',
-        f'capacity_label: "{cap_label}"',
-        f'capacity_slug: "{capacity_slug}"',
-        "---",
-        "",
-    ]
-
-    return "\n".join(front + html)
+    lines.append("{{< /rawhtml >}}")
+    lines.append("")
+    return "\n".join(lines)
 
 
 def write_index_md(path: Path, title: str) -> None:
-    """
-    Creates a Hugo section index file. We do NOT overwrite if it already exists.
-    """
-    if path.exists():
-        return
-    path.parent.mkdir(parents=True, exist_ok=True)
-    safe_title = (title or "").replace('"', r"\"")
-    fm = f'---\ntitle: "{safe_title}"\n---\n'
-    path.write_text(fm, encoding="utf-8")
+    atomic_write_text(path, f'---\ntitle: "{title}"\n---\n')
 
 
-def main() -> int:
-    rows = read_csv(CSV_URL)
-    rows = [r for r in rows if truthy(r.get("published", ""))]
+def write_category_index_md(path: Path, title: str, title_key: str) -> None:
+    atomic_write_text(
+        path,
+        "\n".join([
+            "---",
+            f'title: "{title}"',
+            f'titleKey: "{title_key}"',
+            "---",
+            "",
+        ])
+    )
 
-    # ===== calculator json =====
-    calc_models = build_calculator_json(rows)
-    write_calculator_json(calc_models)
 
-    # ===== calculator pages from calc_name/calc_slug =====
-    calcs = collect_calculators(rows)
-    write_calculator_pages(calcs)
+def write_model_index_md(path: Path, title: str, breadcrumb_title: str) -> None:
+    atomic_write_text(
+        path,
+        "\n".join([
+            "---",
+            f'title: "{title}"',
+            f'breadcrumbTitle: "{breadcrumb_title}"',
+            "---",
+            "",
+        ])
+    )
 
-    pages: Dict[tuple, List[Dict[str, str]]] = {}
-    brand_indexes: Dict[tuple, str] = {}
-    model_indexes: Dict[tuple, str] = {}
+
+def generate_data_pages(rows: List[Dict[str, str]], lang: str) -> None:
+    pages: Dict[Tuple[str, str, str, str, str], List[Dict[str, str]]] = {}
+
+    categories_seen: Dict[str, str] = {}  # category_slug -> fallback_title
+
+    brand_indexes: Dict[Tuple[str, str, str], str] = {}
+    # model_indexes теперь хранит (title, breadcrumbTitle)
+    model_indexes: Dict[Tuple[str, str, str, str], Tuple[str, str]] = {}
 
     for r in rows:
-        lang = (r.get("lang") or "").strip()
         category = (r.get("category") or "").strip()
-
         brand_slug = (r.get("brand_slug") or "").strip()
         model_slug = (r.get("model_slug") or "").strip()
         capacity_slug = (r.get("capacity_slug") or "").strip()
 
-        if not (lang and category and brand_slug and model_slug and capacity_slug):
+        if not (category and brand_slug and model_slug and capacity_slug):
             continue
+
+        categories_seen.setdefault(category, humanize_slug(category))
 
         brand = (r.get("brand") or "").strip()
         model = (r.get("model") or "").strip()
 
         brand_key = (lang, category, brand_slug)
-        if brand_key not in brand_indexes:
-            brand_indexes[brand_key] = brand or brand_slug
+        brand_indexes.setdefault(brand_key, brand or brand_slug)
 
         model_key = (lang, category, brand_slug, model_slug)
+        # title для листинга = "Samsung T7", breadcrumbTitle = "T7"
         if model_key not in model_indexes:
-            model_indexes[model_key] = model or model_slug
+            model_indexes[model_key] = (f"{brand} {model}".strip(), model)
 
         key = (lang, category, brand_slug, model_slug, capacity_slug)
         pages.setdefault(key, []).append(r)
 
     # leaf pages
-    for (lang, category, brand_slug, model_slug, capacity_slug), page_rows in sorted(pages.items()):
+    for (_, category, brand_slug, model_slug, capacity_slug), page_rows in sorted(pages.items()):
         out_dir = OUT_ROOT / lang / "data" / category / brand_slug / model_slug / capacity_slug
         out_dir.mkdir(parents=True, exist_ok=True)
         out_file = out_dir / "index.md"
-        out_file.write_text(build_md(page_rows), encoding="utf-8")
+        atomic_write_text(out_file, build_md(page_rows))
         print(f"Wrote: {out_file}")
 
-    # indexes
-    for (lang, category, brand_slug), title in sorted(brand_indexes.items()):
+    # category index (_index.md) with titleKey (i18n)
+    for category, fallback_title in sorted(categories_seen.items()):
+        p = OUT_ROOT / lang / "data" / category / "_index.md"
+        title_key = f"category.{category}"
+        write_category_index_md(p, fallback_title, title_key)
+        print(f"Index: {p}")
+
+    # brand index (без breadcrumbTitle / titleKey)
+    for (_, category, brand_slug), title in sorted(brand_indexes.items()):
         p = OUT_ROOT / lang / "data" / category / brand_slug / "_index.md"
         write_index_md(p, title)
         print(f"Index: {p}")
 
-    for (lang, category, brand_slug, model_slug), title in sorted(model_indexes.items()):
+    # model index (с breadcrumbTitle)
+    for (_, category, brand_slug, model_slug), (title, bc) in sorted(model_indexes.items()):
         p = OUT_ROOT / lang / "data" / category / brand_slug / model_slug / "_index.md"
-        write_index_md(p, title)
+        write_model_index_md(p, title, bc)
         print(f"Index: {p}")
+
+
+def main() -> int:
+    rows_all = read_csv(CSV_URL)
+    rows_all = [r for r in rows_all if truthy(r.get("published", ""))]
+
+    by_lang = split_rows_by_lang(rows_all, default_lang="en")
+    rows_en = by_lang.get("en", [])
+
+    calc_source = rows_en if rows_en else rows_all
+    write_calculator_json(build_calculator_json(calc_source))
+
+    write_calculators_section_index_pages()
+    write_calculator_pages()
+
+    for lang in TARGET_LANGS:
+        rows_lang = by_lang.get(lang, [])
+        if not rows_lang and lang != "en" and FALLBACK_TO_EN_IF_MISSING and rows_en:
+            print(f"[i] No '{lang}' rows in sheet → generating '{lang}' from EN rows (fallback).")
+            rows_lang = rows_en
+
+        if not rows_lang:
+            print(f"[i] No rows for language '{lang}' — skipping.")
+            continue
+
+        generate_data_pages(rows_lang, lang=lang)
 
     return 0
 

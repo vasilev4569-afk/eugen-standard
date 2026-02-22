@@ -6,7 +6,7 @@
         <span class="brand-title">{{ .Site.Title }}</span>
         <span class="brand-dot" aria-hidden="true"></span>
       </a>
-      <div class="brand-tagline">No marketing. Independent tests.</div>
+      <div class="brand-tagline">{{ i18n "site_tagline" }}</div>
     </div>
 
     {{ $data := "/data/" | relLangURL }}
@@ -15,13 +15,48 @@
     {{ $reviews := "/reviews/" | relLangURL }}
     {{ $best := "/best/" | relLangURL }}
 
-    <nav class="topnav" aria-label="Primary">
-      <a class="{{ if hasPrefix .RelPermalink $data }}is-active{{ end }}" href="{{ $data }}">Data</a>
-      <a class="{{ if hasPrefix .RelPermalink $reviews }}is-active{{ end }}" href="{{ $reviews }}">Reviews</a>
-      <a class="{{ if hasPrefix .RelPermalink $best }}is-active{{ end }}" href="{{ $best }}">Best</a>
-      <a class="{{ if hasPrefix .RelPermalink $method }}is-active{{ end }}" href="{{ $method }}">Methodology</a>
-      <a class="{{ if hasPrefix .RelPermalink $calc }}is-active{{ end }}" href="{{ $calc }}">Calculators</a>
-    </nav>
+    <!-- Right side: nav + language -->
+    <div class="header-right">
+
+      <nav class="topnav" aria-label="Primary">
+        <a class="{{ if hasPrefix .RelPermalink $data }}is-active{{ end }}" href="{{ $data }}">{{ i18n "nav_data" }}</a>
+        <a class="{{ if hasPrefix .RelPermalink $reviews }}is-active{{ end }}" href="{{ $reviews }}">{{ i18n "nav_reviews" }}</a>
+        <a class="{{ if hasPrefix .RelPermalink $best }}is-active{{ end }}" href="{{ $best }}">{{ i18n "nav_best" }}</a>
+        <a class="{{ if hasPrefix .RelPermalink $method }}is-active{{ end }}" href="{{ $method }}">{{ i18n "nav_methodology" }}</a>
+        <a class="{{ if hasPrefix .RelPermalink $calc }}is-active{{ end }}" href="{{ $calc }}">{{ i18n "nav_calculators" }}</a>
+      </nav>
+
+      <!-- Language dropdown (no flags, no JS) -->
+      <div class="lang">
+        <details class="lang-dd">
+          <summary class="lang-btn" aria-label="Language">
+            {{ .Site.Language.LanguageName | default .Lang }}
+            <span class="lang-caret" aria-hidden="true">▾</span>
+          </summary>
+
+          <div class="lang-menu" role="menu">
+
+            <!-- Current language (non-clickable, highlighted) -->
+            <span class="lang-item is-active">
+              {{ .Site.Language.LanguageName | default .Lang }}
+            </span>
+
+            <!-- Other available translations -->
+            {{ range .Translations }}
+              <a class="lang-item"
+                 href="{{ .RelPermalink }}"
+                 lang="{{ .Lang }}"
+                 hreflang="{{ .Lang }}"
+                 role="menuitem">
+                {{ .Site.Language.LanguageName | default .Lang }}
+              </a>
+            {{ end }}
+
+          </div>
+        </details>
+      </div>
+
+    </div>
 
   </div>
 </header>

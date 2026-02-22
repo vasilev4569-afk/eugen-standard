@@ -1,46 +1,48 @@
 ﻿{{ define "main" }}
 
   {{/* =========================
-     Helpers: language-aware paths
+     Language-aware paths
      ========================= */}}
   {{ $lp := .Site.LanguagePrefix }}
   {{ if eq $lp "" }}{{ $lp = "" }}{{ end }}
 
-  {{ $dataRoot := printf "%s/data/" $lp }}
   {{ $catRoot  := printf "%s/data/external-ssd/" $lp }}
 
   {{/* =========================
-     Smart H1 for hierarchy
-     - brand page: "Samsung"
-     - model page: "Samsung T7"
+     Clean H1
+     - category: "External SSDs"
+     - brand: "Samsung"
+     - model: "Samsung T7"
+     Uses .Params.titleKey if present (i18n), else .Title
      ========================= */}}
-  {{ $h1 := .Title }}
-  {{/* model page = has parent (brand) and parent has parent (category) */}}
-  {{ if and .Parent .Parent.Parent }}
-    {{ if eq .Parent.Parent.RelPermalink $catRoot }}
-      {{ $h1 = printf "%s %s" .Parent.Title .Title }}
-    {{ end }}
-  {{ end }}
-  <h1>{{ $h1 }}</h1>
+  {{ $tkey := .Params.titleKey }}
+  <h1>
+    {{- if $tkey -}}
+      {{ i18n $tkey }}
+    {{- else -}}
+      {{ .Title }}
+    {{- end -}}
+  </h1>
 
-  {{ if .Content }}<div>{{ .Content }}</div>{{ end }}
+  {{ if .Content }}
+    <div>{{ .Content }}</div>
+  {{ end }}
 
   {{ $sections := .Sections }}
   {{ $pages := .RegularPages }}
 
-  {{/* =========================
-     Brand page detection (language-aware):
-     current page parent is the category page /data/external-ssd/
-     ========================= */}}
-  {{ $isBrandPage := and .Parent (eq .Parent.RelPermalink $catRoot) (ne .RelPermalink $catRoot) }}
-
   {{ if or (gt (len $sections) 0) (gt (len $pages) 0) }}
     <ul>
+
+      {{/* =========================
+         Subsections (brands, models)
+         ========================= */}}
       {{ range $sections.ByTitle }}
         <li>
           <a href="{{ .RelPermalink }}">
-            {{- if $isBrandPage -}}
-              {{ $.Title }} {{ .Title }}
+            {{- $sk := .Params.titleKey -}}
+            {{- if $sk -}}
+              {{ i18n $sk }}
             {{- else -}}
               {{ .Title }}
             {{- end -}}
@@ -48,17 +50,21 @@
         </li>
       {{ end }}
 
-{{ range $pages.ByTitle }}
-  <li>
-    <a href="{{ .RelPermalink }}">
-      {{- with .Params.capacity_label -}}
-        {{ printf "%s %s" $h1 . }}
-      {{- else -}}
-        {{ .Title }}
-      {{- end -}}
-    </a>
-  </li>
-{{ end }}
+      {{/* =========================
+         Leaf pages (capacities)
+         ========================= */}}
+      {{ range $pages.ByTitle }}
+        <li>
+          <a href="{{ .RelPermalink }}">
+            {{ with .Params.capacity_label }}
+              {{ printf "%s %s" $.Title . }}
+            {{ else }}
+              {{ .Title }}
+            {{ end }}
+          </a>
+        </li>
+      {{ end }}
+
     </ul>
   {{ else }}
     <p>No items yet.</p>
