@@ -1,4 +1,4 @@
 ---
-title: "Data"
+title: "Daten"
 titleKey: "section.data"
 ---

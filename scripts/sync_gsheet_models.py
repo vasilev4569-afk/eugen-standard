@@ -340,23 +340,17 @@ def build_md(page_rows: List[Dict[str, str]]) -> str:
 
         for r in rows:
             metric_key = (r.get("metric_key") or "").strip()
-            metric_label = (r.get("metric_label") or "").strip()
-            mk = metric_key or slugify(metric_label) or "metric"
+            avg_median = (r.get("avg_median") or "").strip()
 
-            avg = (r.get("avg_median") or "").strip()
             a1 = (r.get("attempt1_value") or "").strip()
             a2 = (r.get("attempt2_value") or "").strip()
             a3 = (r.get("attempt3_value") or "").strip()
 
-            lines.append(
-                "<tr>"
-                f'<td data-metric="{html_escape(mk)}"></td>'
-                f"<td class='kpi'>{html_escape(avg)}</td>"
-                f"<td>{html_escape(a1)}</td>"
-                f"<td>{html_escape(a2)}</td>"
-                f"<td>{html_escape(a3)}</td>"
-                "</tr>"
-            )
+            lines.append("<tr>")
+            lines.append(f'<td data-metric="{html_escape(metric_key)}"></td>')
+            lines.append(f"<td>{html_escape(avg_median)}</td>")
+            lines.append(f"<td>{html_escape(a1)}</td><td>{html_escape(a2)}</td><td>{html_escape(a3)}</td>")
+            lines.append("</tr>")
 
         lines.append("</tbody></table>")
         lines.append("")
@@ -367,7 +361,15 @@ def build_md(page_rows: List[Dict[str, str]]) -> str:
 
 
 def write_index_md(path: Path, title: str) -> None:
-    atomic_write_text(path, f'---\ntitle: "{title}"\n---\n')
+    atomic_write_text(
+        path,
+        "\n".join([
+            "---",
+            f'title: "{title}"',
+            "---",
+            "",
+        ])
+    )
 
 
 def write_category_index_md(path: Path, title: str, title_key: str) -> None:
@@ -396,13 +398,39 @@ def write_model_index_md(path: Path, title: str, breadcrumb_title: str) -> None:
     )
 
 
+# -------------------------
+# Data section indexes (for breadcrumbs + i18n)
+# -------------------------
+
+def write_data_root_index_md(path: Path, lang: str) -> None:
+    """Create content/<lang>/data/_index.md.
+
+    This makes breadcrumbs stable and allows i18n via titleKey.
+    """
+    if lang == "de":
+        fallback_title = "Daten"
+    else:
+        fallback_title = "Data"
+    title_key = "section.data"
+    atomic_write_text(
+        path,
+        "\n".join([
+            "---",
+            f'title: "{fallback_title}"',
+            f'titleKey: "{title_key}"',
+            "---",
+            "",
+        ])
+    )
+
+
 def generate_data_pages(rows: List[Dict[str, str]], lang: str) -> None:
     pages: Dict[Tuple[str, str, str, str, str], List[Dict[str, str]]] = {}
 
     categories_seen: Dict[str, str] = {}  # category_slug -> fallback_title
 
     brand_indexes: Dict[Tuple[str, str, str], str] = {}
-    # model_indexes теперь хранит (title, breadcrumbTitle)
+    # model_indexes stores (title, breadcrumbTitle)
     model_indexes: Dict[Tuple[str, str, str, str], Tuple[str, str]] = {}
 
     for r in rows:
@@ -414,7 +442,9 @@ def generate_data_pages(rows: List[Dict[str, str]], lang: str) -> None:
         if not (category and brand_slug and model_slug and capacity_slug):
             continue
 
-        categories_seen.setdefault(category, humanize_slug(category))
+        # Prefer explicit category title from sheet if provided
+        cat_title = (r.get("category_title") or r.get("category_name") or "").strip()
+        categories_seen.setdefault(category, cat_title or humanize_slug(category))
 
         brand = (r.get("brand") or "").strip()
         model = (r.get("model") or "").strip()
@@ -423,7 +453,7 @@ def generate_data_pages(rows: List[Dict[str, str]], lang: str) -> None:
         brand_indexes.setdefault(brand_key, brand or brand_slug)
 
         model_key = (lang, category, brand_slug, model_slug)
-        # title для листинга = "Samsung T7", breadcrumbTitle = "T7"
+        # title for listing = "Samsung T7", breadcrumbTitle = "T7"
         if model_key not in model_indexes:
             model_indexes[model_key] = (f"{brand} {model}".strip(), model)
 
@@ -438,6 +468,10 @@ def generate_data_pages(rows: List[Dict[str, str]], lang: str) -> None:
         atomic_write_text(out_file, build_md(page_rows))
         print(f"Wrote: {out_file}")
 
+    # data root index
+    write_data_root_index_md(OUT_ROOT / lang / "data" / "_index.md", lang)
+    print(f"Index: {OUT_ROOT / lang / 'data' / '_index.md'}")
+
     # category index (_index.md) with titleKey (i18n)
     for category, fallback_title in sorted(categories_seen.items()):
         p = OUT_ROOT / lang / "data" / category / "_index.md"
@@ -445,13 +479,13 @@ def generate_data_pages(rows: List[Dict[str, str]], lang: str) -> None:
         write_category_index_md(p, fallback_title, title_key)
         print(f"Index: {p}")
 
-    # brand index (без breadcrumbTitle / titleKey)
+    # brand index (no breadcrumbTitle / titleKey)
     for (_, category, brand_slug), title in sorted(brand_indexes.items()):
         p = OUT_ROOT / lang / "data" / category / brand_slug / "_index.md"
         write_index_md(p, title)
         print(f"Index: {p}")
 
-    # model index (с breadcrumbTitle)
+    # model index (with breadcrumbTitle)
     for (_, category, brand_slug, model_slug), (title, bc) in sorted(model_indexes.items()):
         p = OUT_ROOT / lang / "data" / category / brand_slug / model_slug / "_index.md"
         write_model_index_md(p, title, bc)
