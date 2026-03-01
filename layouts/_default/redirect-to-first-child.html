@@ -1,7 +1,15 @@
 {{ define "main" }}
-{{ $first := index .RegularPages 0 }}
-{{ if $first }}
-<meta http-equiv="refresh" content="0;url={{ $first.RelPermalink }}">
-<p><a href="{{ $first.RelPermalink }}">Redirecting...</a></p>
+{{ if eq (len .RegularPages) 1 }}
+  {{ $first := index .RegularPages 0 }}
+  <meta http-equiv="refresh" content="0;url={{ $first.RelPermalink }}">
+  <p><a href="{{ $first.RelPermalink }}">Redirecting...</a></p>
+{{ else }}
+  <h1>{{ .Title }}</h1>
+  {{ if .Content }}<div>{{ .Content }}</div>{{ end }}
+  <ul>
+    {{ range .RegularPages }}
+      <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+    {{ end }}
+  </ul>
 {{ end }}
 {{ end }}
