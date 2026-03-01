@@ -1,14 +1,8 @@
 {{- if or .IsHome (in (slice "taxonomy" "term") .Kind) -}}
 {{- else -}}
 
-  {{- $lang := .Site.Language.Lang -}}
-  {{- $labelHome := "Home" -}}
-  {{- if eq $lang "de" -}}{{- $labelHome = "Startseite" -}}{{- end -}}
-  {{- if eq $lang "fr" -}}{{- $labelHome = "Accueil" -}}{{- end -}}
-  {{- if eq $lang "ru" -}}{{- $labelHome = "Главная" -}}{{- end -}}
-
   {{- $crumbs := slice -}}
-  {{- $crumbs = $crumbs | append (dict "title" $labelHome "url" .Site.Home.RelPermalink) -}}
+  {{- $crumbs = $crumbs | append (dict "title" (i18n "breadcrumb_home") "url" .Site.Home.RelPermalink) -}}
 
   {{- range .Ancestors.Reverse -}}
     {{- if and (ne .RelPermalink $.Site.Home.RelPermalink) (ne .Title "") -}}

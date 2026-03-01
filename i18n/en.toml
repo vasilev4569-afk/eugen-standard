@@ -1,6 +1,9 @@
 [site_tagline]
 other = "No marketing. Independent tests."
 
+[breadcrumb_home]
+other = "Home"
+
 [nav_data]
 other = "Data"
 

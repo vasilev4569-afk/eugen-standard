@@ -10,6 +10,10 @@
   --border:#e5e7eb;
   --soft:#f6f6f6;
   --radius:16px;
+  --hover-bg:#fafafa;
+  --table-zebra:#fcfcfd;
+  --table-hover:#fcfcfc;
+  --border-hover:#d6d6d6;
 
   /* subtle technical accent */
   --accent:#0f172a;
@@ -129,7 +133,7 @@ a:hover{ text-decoration:underline; }
 }
 
 .topnav a:hover{
-  background:#fafafa;
+  background:var(--hover-bg);
   color:var(--text);
   text-decoration:none;
 }
@@ -201,7 +205,7 @@ a:hover{ text-decoration:underline; }
 
 .footer-nav a:hover{
   color:var(--text);
-  background:#fafafa;
+  background:var(--hover-bg);
   text-decoration:none;
 }
 
@@ -268,7 +272,10 @@ pre code{
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size:12px;
   line-height:1.45;
-  white-space:inherit;           /* follow pre settings */
+  white-space:inherit;
+  background:transparent;
+  padding:0;
+  border-radius:0;
 }
 
 code{
@@ -279,26 +286,19 @@ code{
   border-radius:8px;
 }
 
-/* don't double-style code inside pre */
-pre code{
-  background:transparent;
-  padding:0;
-  border-radius:0;
-}
-
 /* ===== Capacity switch ===== */
 .cap-switch{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 18px; }
 .cap-btn{
   display:inline-block;
   padding:8px 12px;
-  border:1px solid #ddd;
+  border:1px solid var(--border);
   border-radius:10px;
-  background:#fafafa;
-  color:#111;
+  background:var(--hover-bg);
+  color:var(--text);
 }
 .cap-btn.is-active{
   background:var(--accent);
-  color:#fff;
+  color:var(--bg);
   border-color:var(--accent);
 }
 
@@ -321,7 +321,7 @@ th, td{
 
 .meta-table th, .meta-table td,
 .data-table th, .data-table td{
-  border:1px solid #e1e1e1;
+  border:1px solid var(--border);
   padding:10px;
   text-align:left;
   vertical-align:top;
@@ -363,14 +363,14 @@ th, td{
 
 /* subtle zebra for readability */
 .data-table tbody tr:nth-child(even) td{
-  background:#fcfcfd;
+  background:var(--table-zebra);
 }
 
 /* hover rows */
 @media (hover:hover){
   table tbody tr:hover td,
   table tbody tr:hover th{
-    background:#fcfcfc;
+    background:var(--table-hover);
   }
 }
 
@@ -388,18 +388,18 @@ th, td{
   margin:16px 0 22px;
 }
 
-.testunit-left .meta-table{
-  margin-top:0 !important;
-  margin-bottom:0 !important;
+.testunit-grid .testunit-left .meta-table{
+  margin-top:0;
+  margin-bottom:0;
 }
 
-.testunit-left .meta-table tr{
-  height:52px !important;
+.testunit-grid .testunit-left .meta-table tr{
+  height:52px;
 }
-.testunit-left .meta-table th,
-.testunit-left .meta-table td{
-  padding:10px !important;
-  line-height:1.25 !important;
+.testunit-grid .testunit-left .meta-table th,
+.testunit-grid .testunit-left .meta-table td{
+  padding:10px;
+  line-height:1.25;
 }
 
 .testunit-photo{
@@ -499,7 +499,7 @@ th, td{
   padding:10px 16px;
   border-radius:8px;
   border:1px solid var(--border);
-  background:#fff;
+  background:var(--bg);
   color:var(--text);
   text-decoration:none;
   font-weight:600;
@@ -507,14 +507,14 @@ th, td{
 }
 
 .btn:hover{
-  background:#fafafa;
+  background:var(--hover-bg);
   text-decoration:none;
 }
 
 .btn-primary{
   background:var(--accent);
   border-color:var(--accent);
-  color:#fff;
+  color:var(--bg);
 }
 
 .btn-primary:hover{ opacity:.92; }
@@ -531,12 +531,12 @@ th, td{
   border:1px solid var(--border);
   border-radius:var(--radius);
   padding:18px;
-  background:#fff;
+  background:var(--bg);
   transition: all .15s ease;
 }
 
 .card:hover{
-  border-color:#d6d6d6;
+  border-color:var(--border-hover);
 }
 
 .card-title{
@@ -597,7 +597,7 @@ th, td{
 
 @media (max-width: 1100px){
   .testunit-grid{ grid-template-columns: 1fr; }
-  .testunit-left .meta-table tr{ height:auto !important; }
+  .testunit-grid .testunit-left .meta-table tr{ height:auto; }
   .testunit-photo{ height:260px; }
 }
 
@@ -668,13 +668,9 @@ th, td{
 
 /* ==========================================
    Chroma (Hugo) — force monochrome code blocks
-   Purpose: readability for command snippets (methodology/docs),
-   avoid theme-dependent token colors.
    ========================================== */
 
-/* Outer wrappers Hugo may emit */
-.highlight,
-.chroma{
+.highlight, .chroma {
   background: var(--soft) !important;
   color: var(--text) !important;
   border: 1px solid var(--border);
@@ -684,45 +680,29 @@ th, td{
   overflow: auto;
 }
 
-/* Keep inner pre transparent and preserve line breaks */
-.highlight pre,
-.chroma pre{
+.highlight pre, .chroma pre {
   background: transparent !important;
   color: inherit !important;
   margin: 0 !important;
   padding: 0 !important;
   border: 0 !important;
-  white-space: pre !important;     /* preserve PowerShell backticks/newlines */
+  white-space: pre !important;
   overflow-x: auto;
 }
 
-/* Monochrome everything inside (tokens, spans, etc.) */
-.highlight code,
-.chroma code,
-.highlight pre code,
-.chroma pre code,
-.highlight .ln,
-.chroma .ln{
+.highlight code, .chroma code,
+.highlight pre code, .chroma pre code,
+.highlight .ln, .chroma .ln,
+.highlight span, .chroma span {
   background: transparent !important;
   color: inherit !important;
 }
 
-/* Force all token spans to inherit text color (kills colorful syntax themes) */
-.chroma span,
-.highlight span{
-  color: inherit !important;
-  background: transparent !important;
-}
-
-/* Optional: line numbers (if enabled) look muted */
-.chroma .lnt,
-.highlight .lnt{
+.highlight .lnt, .chroma .lnt {
   color: var(--muted) !important;
 }
 
-/* Optional: keep selection readable */
-.chroma ::selection,
-.highlight ::selection{
+.highlight ::selection, .chroma ::selection {
   background: rgba(15, 23, 42, 0.12);
 }
 
@@ -747,7 +727,7 @@ th, td{
 }
 
 .lang-btn:hover{
-  background:#fafafa;
+  background:var(--hover-bg);
   color:var(--text);
   border-color:var(--border);
 }
@@ -765,7 +745,7 @@ th, td{
   right:0;
   top:calc(100% + 8px);
   min-width:170px;
-  background:#fff;
+  background:var(--bg);
   border:1px solid var(--border);
   border-radius:12px;
   box-shadow:0 10px 24px rgba(0,0,0,.08);
@@ -783,7 +763,7 @@ th, td{
 }
 
 .lang-item:hover{
-  background:#fafafa;
+  background:var(--hover-bg);
   color:var(--text);
   text-decoration:none;
 }
