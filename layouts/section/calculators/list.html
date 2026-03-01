@@ -9,10 +9,8 @@
     {{ range .Pages }}
       <li>
         {{ $url := .RelPermalink }}
-        {{ if eq $.Section "calculators" }}
-          {{ if and (eq .Kind "section") (eq (len .RegularPages) 1) (eq (.Param "layout") "redirect-to-first-child") }}
-            {{ $url = (index .RegularPages 0).RelPermalink }}
-          {{ end }}
+        {{ if and (eq .Kind "section") (eq (len .RegularPages) 1) (eq (.Param "layout") "redirect-to-first-child") }}
+          {{ $url = (index .RegularPages 0).RelPermalink }}
         {{ end }}
         <a href="{{ $url }}">{{ .Title }}</a>
       </li>

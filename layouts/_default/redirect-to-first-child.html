@@ -1,0 +1,7 @@
+{{ define "main" }}
+{{ $first := index .RegularPages 0 }}
+{{ if $first }}
+<meta http-equiv="refresh" content="0;url={{ $first.RelPermalink }}">
+<p><a href="{{ $first.RelPermalink }}">Redirecting...</a></p>
+{{ end }}
+{{ end }}

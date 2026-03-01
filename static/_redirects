@@ -1,0 +1,7 @@
+# Category → single calculator (301). Remove when category has 2+ calculators.
+/en/calculators/external-ssd/    /en/calculators/external-ssd/read-write-time-calculator/    301
+/de/calculators/external-ssd/    /de/calculators/external-ssd/read-write-time-calculator/    301
+
+# Old calculator URL → new (301)
+/en/calculators/external-ssd-read-write-time-calculator/    /en/calculators/external-ssd/read-write-time-calculator/    301
+/de/calculators/external-ssd-read-write-time-calculator/    /de/calculators/external-ssd/read-write-time-calculator/    301

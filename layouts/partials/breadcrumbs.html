@@ -10,21 +10,26 @@
       {{- $p := site.GetPage .RelPermalink -}}
       {{- if not $p -}}{{- $p = . -}}{{- end -}}
 
-      {{- $t := $p.Title -}}
+      {{- /* skip section that redirects to its only child (avoids breadcrumb link that just reloads) */ -}}
+      {{- $skip := and (eq ($p.Params.layout | default "") "redirect-to-first-child") (eq (len $p.RegularPages) 1) -}}
+      {{- if not $skip -}}
 
-      {{- with $p.Params.titleKey -}}
-        {{- $tk := . -}}
-        {{- $tr := i18n $tk -}}
-        {{- if and (ne $tr "") (ne $tr $tk) -}}
-          {{- $t = $tr -}}
+        {{- $t := $p.Title -}}
+
+        {{- with $p.Params.titleKey -}}
+          {{- $tk := . -}}
+          {{- $tr := i18n $tk -}}
+          {{- if and (ne $tr "") (ne $tr $tk) -}}
+            {{- $t = $tr -}}
+          {{- end -}}
         {{- end -}}
-      {{- end -}}
 
-      {{- with $p.Params.breadcrumbTitle -}}
-        {{- if ne . "" -}}{{- $t = . -}}{{- end -}}
-      {{- end -}}
+        {{- with $p.Params.breadcrumbTitle -}}
+          {{- if ne . "" -}}{{- $t = . -}}{{- end -}}
+        {{- end -}}
 
-      {{- $crumbs = $crumbs | append (dict "title" $t "url" $p.RelPermalink) -}}
+        {{- $crumbs = $crumbs | append (dict "title" $t "url" $p.RelPermalink) -}}
+      {{- end -}}
     {{- end -}}
   {{- end -}}
 

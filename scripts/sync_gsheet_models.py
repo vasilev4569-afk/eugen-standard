@@ -15,8 +15,9 @@ TARGET_LANGS = ("en", "de")
 FALLBACK_TO_EN_IF_MISSING = True
 
 CALC_SECTION_DIR = Path("calculators")
-CALC_SLUG = "external-ssd-read-write-time-calculator"
-CALC_REL_DIR = CALC_SECTION_DIR / CALC_SLUG
+CALC_CATEGORY = "external-ssd"
+CALC_SLUG = "read-write-time-calculator"
+CALC_REL_DIR = CALC_SECTION_DIR / CALC_CATEGORY / CALC_SLUG
 
 # For Hugo translation linking (language switch, relref stability, etc.)
 CALC_TRANSLATION_KEY = "calc-external-ssd-read-write-time"
@@ -231,6 +232,29 @@ def write_calculators_section_index_pages() -> None:
         print(f"Calculators section index: {out_file}")
 
 
+def build_calc_category_index_md(lang: str) -> str:
+    if lang == "de":
+        title = "Externe SSD"
+    else:
+        title = "External SSD"
+    return "\n".join([
+        "---",
+        f'title: "{title}"',
+        'titleKey: "category.external-ssd"',
+        'layout: "redirect-to-first-child"',
+        "---",
+        "",
+    ])
+
+
+def write_calc_category_index_pages() -> None:
+    for lang in TARGET_LANGS:
+        out_file = OUT_ROOT / lang / CALC_SECTION_DIR / CALC_CATEGORY / "_index.md"
+        out_file.parent.mkdir(parents=True, exist_ok=True)
+        atomic_write_text(out_file, build_calc_category_index_md(lang))
+        print(f"Calc category index: {out_file}")
+
+
 def build_calculator_md(lang: str) -> str:
     if lang == "de":
         title = "External SSD Lese- & Schreibzeit-Rechner"
@@ -245,7 +269,7 @@ def build_calculator_md(lang: str) -> str:
     lines.append(f'description: "{description}"')
     lines.append(f'translationKey: "{CALC_TRANSLATION_KEY}"')
     lines.append('layout: "calculator"')
-    lines.append(f'slug: "{CALC_SLUG}"')
+    lines.append(f'slug: "{CALC_SLUG}"')  # URL segment under category
     lines.append("---")
     lines.append("")
     return "\n".join(lines)
@@ -503,6 +527,7 @@ def main() -> int:
     write_calculator_json(build_calculator_json(calc_source))
 
     write_calculators_section_index_pages()
+    write_calc_category_index_pages()
     write_calculator_pages()
 
     for lang in TARGET_LANGS:
