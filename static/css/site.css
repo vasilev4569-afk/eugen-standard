@@ -252,6 +252,13 @@ p{ margin:0 0 12px; }
   max-width:none;
 }
 
+.data-review-link{ margin-top:6px; }
+
+/* Review page (layer 2) */
+.review-page .page-header{ margin-bottom:24px; }
+.review-page .review-content{ margin-top:20px; }
+.review-page .review-content :first-child{ margin-top:0; }
+
 /* =========================================================
    CODE BLOCKS (Markdown)
    ========================================================= */

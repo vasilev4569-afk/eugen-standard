@@ -91,6 +91,15 @@ other = "Test unit photo"
 [data_last_updated]
 other = "Last updated"
 
+[data_methodology_prefix]
+other = "Independent measurements under our"
+
+[data_methodology_link]
+other = "methodology"
+
+[data_review_line]
+other = "Full review (interpretation & video) →"
+
 [list_no_items]
 other = "No items yet."
 

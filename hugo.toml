@@ -14,6 +14,11 @@ defaultContentLanguageInSubdir = true
     weight = 2
     contentDir = "content/de"
 
+  [languages.fr]
+    languageName = "Français"
+    weight = 3
+    contentDir = "content/fr"
+
 [markup]
   [markup.goldmark]
     [markup.goldmark.renderer]

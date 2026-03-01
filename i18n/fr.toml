@@ -1,0 +1,254 @@
+[site_tagline]
+other = "Pas de marketing. Tests indépendants."
+
+[breadcrumb_home]
+other = "Accueil"
+
+[nav_data]
+other = "Données"
+
+[nav_reviews]
+other = "Avis"
+
+[nav_best]
+other = "Meilleur"
+
+[nav_methodology]
+other = "Méthodologie"
+
+[nav_calculators]
+other = "Calculatrices"
+
+[footer_tagline_line1]
+other = "Pas de marketing. Tests indépendants."
+
+[footer_tagline_line2]
+other = "Mesures brutes selon une méthodologie standardisée."
+
+[footer_copy]
+other = "© 2026 Eugen Standard"
+
+[footer_meta]
+other = "Aucune influence de sponsoring. Pas de scores subjectifs."
+
+[home_title]
+other = "Portail de données"
+
+[home_subtitle]
+other = "Benchmarks bruts indépendants selon une méthodologie standardisée."
+
+[home_start_here]
+other = "Commencer ici"
+
+[home_browse_category]
+other = "Parcourir par catégorie."
+
+[home_external_ssd]
+other = "SSD externes"
+
+[home_how_read]
+other = "Comment lire les tableaux"
+
+[home_avg]
+other = "Moyenne (médiane) — valeur principale à comparer."
+
+[home_attempts]
+other = "Tentatives — vérification de reproductibilité."
+
+[home_fresh]
+other = "Fresh vs Sustained — cache vs écritures longues."
+
+[home_open_methodology]
+other = "Méthodologie ouverte →"
+
+[home_latest]
+other = "Dernières mises à jour"
+
+[home_manual]
+other = "Liste manuelle pour l'instant."
+
+[home_integrity]
+other = "Intégrité"
+
+[home_integrity_1]
+other = "Aucune influence de sponsoring."
+
+[home_integrity_2]
+other = "Environnement de test standardisé."
+
+[home_integrity_3]
+other = "Mesures brutes (pas de « scores marketing »)."
+
+[data_test_unit_env]
+other = "Unité de test et environnement"
+
+[data_capacity_switch]
+other = "Choix de capacité"
+
+[data_test_unit_photo]
+other = "Photo de l'unité de test"
+
+[data_last_updated]
+other = "Dernière mise à jour"
+
+[data_methodology_prefix]
+other = "Mesures indépendantes selon notre"
+
+[data_methodology_link]
+other = "méthodologie"
+
+[data_review_line]
+other = "Revue complète (analyse & vidéo) →"
+
+[list_no_items]
+other = "Aucun élément pour l'instant."
+
+[data_section_fresh_seq_write_250gib]
+other = "Écriture séquentielle (250 Gio)"
+
+[data_section_seq_read_250gib]
+other = "Lecture séquentielle (250 Gio)"
+
+[data_section_random_read_4k_qd1]
+other = "Lecture aléatoire 4K QD1"
+
+[data_meta_ssd_model]
+other = "Modèle SSD"
+
+[data_meta_capacity_gib]
+other = "Capacité (Gio)"
+
+[data_meta_serial_number]
+other = "Numéro de série"
+
+[data_meta_firmware]
+other = "Firmware"
+
+[data_meta_operating_system]
+other = "Système d'exploitation"
+
+[data_meta_fio_version]
+other = "Version Fio"
+
+[data_col_metric]
+other = "Métrique"
+
+[data_col_avg_median]
+other = "Moyenne (médiane)"
+
+[data_col_attempt1]
+other = "Tentative 1"
+
+[data_col_attempt2]
+other = "Tentative 2"
+
+[data_col_attempt3]
+other = "Tentative 3"
+
+[data_metric_avg_speed_mb_s]
+other = "Vitesse moy. (Mo/s)"
+
+[data_metric_sustained_speed_mb_s]
+other = "Vitesse soutenue (Mo/s)"
+
+[data_metric_slc_speed_mb_s]
+other = "Vitesse SLC (Mo/s)"
+
+[data_metric_time_slc_sec]
+other = "Temps SLC (s)"
+
+[data_metric_slc_data_gib]
+other = "Gio (données SLC)"
+
+[data_metric_time_total_sec]
+other = "Temps total (s)"
+
+[data_metric_data_size_gib]
+other = "Taille des données (Gio)"
+
+[data_metric_latency_p99_ms]
+other = "Latence p99 (ms)"
+
+[calc_title_rw]
+other = "Calculatrice temps lecture et écriture SSD externe"
+
+[calc_title_r]
+other = "Calculatrice temps lecture SSD externe"
+
+[calc_mode]
+other = "Mode"
+
+[calc_write]
+other = "Écriture"
+
+[calc_read]
+other = "Lecture"
+
+[calc_write_size]
+other = "Taille d'écriture (Gio)"
+
+[calc_read_size]
+other = "Taille de lecture (Gio)"
+
+[calc_range_line]
+other = "Plage : 0–{max} Gio • Valeur actuelle : {val} Gio"
+
+[calc_range_line_default]
+other = "Plage : 0–2000 Gio • Valeur actuelle : 10 Gio"
+
+[calc_legend_sustained]
+other = "Soutenu"
+
+[calc_legend_sequential]
+other = "Séquentiel"
+
+[calc_th_model]
+other = "Modèle"
+
+[calc_th_slc_speed]
+other = "Vitesse SLC"
+
+[calc_th_slc_size]
+other = "Taille SLC"
+
+[calc_th_speed_sustained]
+other = "Vitesse soutenue"
+
+[calc_th_speed_sequential]
+other = "Vitesse séquentielle"
+
+[calc_th_slc_part]
+other = "Partie SLC"
+
+[calc_th_sus_part]
+other = "Partie soutenue"
+
+[calc_th_total_time]
+other = "Temps total"
+
+[calc_show_all]
+other = "Afficher tous les modèles :"
+
+[calc_loading_data]
+other = "Chargement des données…"
+
+[calc_loading_row]
+other = "Chargement…"
+
+[calc_reading_json]
+other = "Lecture de /data/calculator.json"
+
+[calc_no_data]
+other = "Aucune donnée"
+
+[calc_data_load_error]
+other = "Erreur de chargement des données"
+
+[calc_summary_best]
+other = "Meilleur temps pour {size} Gio : {name} — {time}"
+
+[calc_summary_worst]
+other = "Pire : {name} — {time} • Différence ≈ {diff}"
+
+[category.external-ssd]
+other = "SSD externe"

@@ -1,4 +1,4 @@
-﻿{{ define "main" }}
+{{ define "main" }}
 
 {{/* =========================================================
    Layer 1 (clean, i18n-safe):
@@ -76,12 +76,33 @@
       </nav>
     {{ end }}
 
-    {{/* Lead text */}}
-    {{ with .Params.lead }}
-      <p class="lead">{{ . | $.Page.RenderString }}</p>
-    {{ else }}
-      {{ with .Params.description }}
-        <p class="lead">{{ . | $.Page.RenderString }}</p>
+    {{/* Short methodology line + optional review link */}}
+    <p class="lead">
+      {{ i18n "data_methodology_prefix" }}
+      <a href="{{ "methodology/" | relLangURL }}">{{ i18n "data_methodology_link" }}</a>.
+    </p>
+    {{ $cat := .Params.category }}
+    {{ $brand := .Params.brand_slug }}
+    {{ $model := .Params.model_slug }}
+    {{ $cap := .Params.capacity_slug }}
+    {{ if not $cat }}
+      {{ $pathTrim := strings.TrimSuffix "/" .RelPermalink }}
+      {{ $pathTrim = strings.TrimPrefix .Site.LanguagePrefix $pathTrim }}
+      {{ $pathTrim = strings.TrimPrefix "/data/" $pathTrim }}
+      {{ $parts := split $pathTrim "/" }}
+      {{ if ge (len $parts) 4 }}
+        {{ $cat = index $parts 0 }}
+        {{ if not $brand }}{{ $brand = index $parts 1 }}{{ end }}
+        {{ if not $model }}{{ $model = index $parts 2 }}{{ end }}
+        {{ if not $cap }}{{ $cap = index $parts 3 }}{{ end }}
+      {{ end }}
+    {{ end }}
+    {{ if and $cat $brand $model $cap }}
+      {{ $reviewPath := printf "reviews/%s/%s/%s/%s" $cat $brand $model $cap }}
+      {{ with $.Site.GetPage $reviewPath }}
+        <p class="lead data-review-link">
+          <a href="{{ .RelPermalink }}">{{ i18n "data_review_line" }}</a>
+        </p>
       {{ end }}
     {{ end }}
   </header>

@@ -1,9 +1,50 @@
-﻿<meta charset="utf-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link rel="stylesheet" href="/css/site.css">
 
-<title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} | {{ .Site.Title }}{{ end }}</title>
+{{ $pageTitle := .Title }}
+{{ $isListNoindex := false }}
+{{ if and (eq .Kind "section") (ne . .FirstSection) }}
+  {{ $catTitle := "" }}
+  {{ range .Ancestors }}
+    {{ if eq .Parent $.FirstSection }}
+      {{ with .Param "titlekey" }}
+        {{ $catTitle = i18n . }}
+      {{ else }}
+        {{ $catTitle = .Title }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+  {{ $currentTitle := .Title }}
+  {{ with .Param "titlekey" }}
+    {{ $currentTitle = i18n . }}
+  {{ end }}
+  {{ if eq .Section "reviews" }}
+    {{ $isListNoindex = true }}
+    {{ if $catTitle }}
+      {{ $pageTitle = printf "Reviews %s %s" $catTitle $currentTitle }}
+    {{ else }}
+      {{ $pageTitle = printf "Reviews %s" $currentTitle }}
+    {{ end }}
+  {{ else if eq .Section "data" }}
+    {{ $isListNoindex = true }}
+    {{ if $catTitle }}
+      {{ $pageTitle = printf "Data %s %s" $catTitle $currentTitle }}
+    {{ else }}
+      {{ $pageTitle = printf "Data %s" $currentTitle }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+{{ if and (eq .Kind "section") (eq . .FirstSection) }}
+  {{ if or (eq .Section "reviews") (eq .Section "data") }}
+    {{ $isListNoindex = true }}
+  {{ end }}
+{{ end }}
+<title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ $pageTitle }} | {{ .Site.Title }}{{ end }}</title>
+{{ if $isListNoindex }}
+<meta name="robots" content="noindex, follow">
+{{ end }}
 
 {{ $desc := or .Params.description .Description .Summary }}
 {{ with $desc }}
@@ -24,7 +65,7 @@
 {{ end }}
 
 <meta property="og:type" content="{{ if .IsHome }}website{{ else }}article{{ end }}">
-<meta property="og:title" content="{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }}{{ end }}">
+<meta property="og:title" content="{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ $pageTitle }}{{ end }}">
 {{ with $desc }}
 <meta property="og:description" content="{{ . | plainify }}">
 {{ end }}

@@ -91,6 +91,15 @@ other = "Foto des Testgeräts"
 [data_last_updated]
 other = "Zuletzt aktualisiert"
 
+[data_methodology_prefix]
+other = "Unabhängige Messungen nach unserer"
+
+[data_methodology_link]
+other = "Methodik"
+
+[data_review_line]
+other = "Vollständiger Test (Auswertung & Video) →"
+
 [list_no_items]
 other = "Noch keine Einträge."
 

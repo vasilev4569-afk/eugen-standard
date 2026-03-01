@@ -11,7 +11,7 @@ from urllib.request import urlopen
 CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSNY87-WIChWcLHd8Ilyx4Smy8hxRC690C4wjhb_yLgfi3uooSD91Pw6TZiK83n269O8AC_3koMsI1-/pub?gid=0&single=true&output=csv"
 
 OUT_ROOT = Path("content")
-TARGET_LANGS = ("en", "de")
+TARGET_LANGS = ("en", "de", "fr")
 FALLBACK_TO_EN_IF_MISSING = True
 
 CALC_SECTION_DIR = Path("calculators")
@@ -212,6 +212,9 @@ def build_calculators_section_index_md(lang: str) -> str:
     if lang == "de":
         title = "Rechner"
         description = "Tools zur Berechnung von Zeiten und Geschwindigkeiten basierend auf echten Messdaten."
+    elif lang == "fr":
+        title = "Calculatrices"
+        description = "Outils pour estimer temps et débits à partir de mesures réelles."
     else:
         title = "Calculators"
         description = "Tools to estimate times and speeds based on real measurements."
@@ -235,6 +238,8 @@ def write_calculators_section_index_pages() -> None:
 def build_calc_category_index_md(lang: str) -> str:
     if lang == "de":
         title = "Externe SSD"
+    elif lang == "fr":
+        title = "SSD externe"
     else:
         title = "External SSD"
     return "\n".join([
@@ -259,6 +264,9 @@ def build_calculator_md(lang: str) -> str:
     if lang == "de":
         title = "External SSD Lese- & Schreibzeit-Rechner"
         description = "Berechne reale Lese- und Schreibzeiten basierend auf SLC-Cache und Sustained Speed."
+    elif lang == "fr":
+        title = "Calculatrice temps lecture et écriture SSD externe"
+        description = "Calculez les temps réels de lecture et d'écriture selon le cache SLC et la vitesse soutenue."
     else:
         title = "External SSD Read & Write Time Calculator"
         description = "Calculate real read/write times based on SLC cache and sustained speed."
@@ -298,6 +306,7 @@ def build_md(page_rows: List[Dict[str, str]]) -> str:
     brand_slug = (r0.get("brand_slug") or "").strip()
     model_slug = (r0.get("model_slug") or "").strip()
     cap_slug = (r0.get("capacity_slug") or "").strip()
+    category = (r0.get("category") or "").strip()
 
     title = f"{brand} {model} {cap_label} - Raw Test Data"
     description = (
@@ -325,9 +334,7 @@ def build_md(page_rows: List[Dict[str, str]]) -> str:
     lines.append("---")
     lines.append(f'title: "{title}"')
     lines.append(f'description: "{description}"')
-    lines.append(
-        f'lead: "Independent technical performance measurements of the {brand} {model} {cap_label} conducted in a controlled test environment in accordance with the standardized Eugen Standard [methodology](/en/methodology/)."'
-    )
+    lines.append(f'category: "{category}"')
     lines.append(f'brand: "{brand}"')
     lines.append(f'model: "{model}"')
     lines.append(f'brand_slug: "{brand_slug}"')
@@ -433,6 +440,8 @@ def write_data_root_index_md(path: Path, lang: str) -> None:
     """
     if lang == "de":
         fallback_title = "Daten"
+    elif lang == "fr":
+        fallback_title = "Données"
     else:
         fallback_title = "Data"
     title_key = "section.data"

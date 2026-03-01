@@ -14,7 +14,15 @@
             {{ $url = (index .RegularPages 0).RelPermalink }}
           {{ end }}
         {{ end }}
-        <a href="{{ $url }}">{{ .Title }}</a>
+        {{ $linkText := .Title }}
+        {{ if and (eq $.Section "reviews") (eq .Kind "page") }}
+          {{ $cap := .Param "breadcrumbtitle" }}
+          {{ if not $cap }}
+            {{ $cap = path.Base (strings.TrimSuffix "/" .File.Dir) }}
+          {{ end }}
+          {{ $linkText = printf "%s %s" $.Title $cap }}
+        {{ end }}
+        <a href="{{ $url }}">{{ $linkText }}</a>
       </li>
     {{ end }}
   </ul>
