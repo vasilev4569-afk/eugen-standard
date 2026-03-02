@@ -20,7 +20,7 @@ collections:
     create: true
     nested:
       depth: 4
-      subfolders: false
+      subfolders: true
     meta:
       path:
         widget: string
