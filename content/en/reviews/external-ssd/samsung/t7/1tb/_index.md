@@ -10,7 +10,7 @@ In this article, we test the Samsung T7 external SSD (1 TB).
 
 Here you will find results for sustained writing, reading, small-file performance, case temperature data, and a comparison using our calculator on the website. At the end, we also compare time and current price per GiB in the calculator.
 
----
+- - -
 
 ## Device, accessories, versions
 
@@ -18,7 +18,13 @@ Keeping it strictly practical: a metal enclosure, USB-C, and two included cables
 
 Samsung offers 500 GB, 1 TB, and 2 TB versions, plus multiple color options. This test uses the 1 TB version. The real usable capacity after formatting is **931 GiB**. This is normal: it’s simply the difference between decimal “terabytes” on the box and binary “gibibytes” reported by the operating system.
 
----
+![](/uploads/1.webp)
+
+![](/uploads/3.avif)
+
+![](/uploads/2.avif)
+
+- - -
 
 ## Methodology
 
@@ -26,7 +32,7 @@ All measurements were performed on Windows 10 using Fio—repeatable, controlled
 
 We measure case temperature with an external instrument rather than internal sensors. For each test, we publish the median maximum case temperature in Raw Data.
 
----
+- - -
 
 ## Sequential Write (250 GiB)
 
@@ -44,7 +50,7 @@ A practical example: if you copy about 200 GiB, the calculator on our site lets 
 
 Main takeaway for writing: for large transfers, focus less on peak speed at the start and more on post-cache behavior and total time.
 
----
+- - -
 
 ## Sequential Read (250 GiB)
 
@@ -56,7 +62,7 @@ In our test, T7 read performance is stable. For everyday use, that means predict
 
 We also record the maximum case temperature during read workloads and add it to layer 1.
 
----
+- - -
 
 ## Random Read 4K QD1
 
@@ -68,7 +74,7 @@ Here, both speed and latency matter. Latency directly affects perceived responsi
 
 For this workload as well, we publish the median maximum case temperature in Raw Data.
 
----
+- - -
 
 ## Summary and comparison
 
