@@ -17,7 +17,7 @@
   {{ $pages := .RegularPages }}
 
   {{ if or (gt (len $sections) 0) (gt (len $pages) 0) }}
-    <ul>
+    <ul class="linklist">
 
       {{ range $sections.ByTitle }}
         <li>

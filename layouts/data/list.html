@@ -1,4 +1,4 @@
-﻿{{ define "main" }}
+{{ define "main" }}
 
   {{/* =========================
      Language-aware paths
@@ -32,7 +32,7 @@
   {{ $pages := .RegularPages }}
 
   {{ if or (gt (len $sections) 0) (gt (len $pages) 0) }}
-    <ul>
+    <ul class="linklist">
 
       {{/* =========================
          Subsections (brands, models)

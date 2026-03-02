@@ -5,25 +5,25 @@
     <div>{{ .Content }}</div>
   {{ end }}
 
-  <ul>
-    {{ range .Pages }}
+  <ul class="linklist">
+    {{- range .Pages -}}
       <li>
-        {{ $url := .RelPermalink }}
-        {{ if eq $.Section "calculators" }}
-          {{ if and (eq .Kind "section") (eq (len .RegularPages) 1) (eq (.Param "layout") "redirect-to-first-child") }}
-            {{ $url = (index .RegularPages 0).RelPermalink }}
-          {{ end }}
-        {{ end }}
-        {{ $linkText := .Title }}
-        {{ if and (eq $.Section "reviews") (eq .Kind "page") }}
-          {{ $cap := .Param "breadcrumbtitle" }}
-          {{ if not $cap }}
-            {{ $cap = path.Base (strings.TrimSuffix "/" .File.Dir) }}
-          {{ end }}
-          {{ $linkText = printf "%s %s" $.Title $cap }}
-        {{ end }}
+        {{- $url := .RelPermalink -}}
+        {{- if eq $.Section "calculators" -}}
+          {{- if and (eq .Kind "section") (eq (len .RegularPages) 1) (eq (.Param "layout") "redirect-to-first-child") -}}
+            {{- $url = (index .RegularPages 0).RelPermalink -}}
+          {{- end -}}
+        {{- end -}}
+        {{- $linkText := .Title -}}
+        {{- if and (eq $.Section "reviews") (eq .Kind "page") -}}
+          {{- $cap := .Param "breadcrumbtitle" -}}
+          {{- if not $cap -}}
+            {{- $cap = path.Base (strings.TrimSuffix "/" .File.Dir) -}}
+          {{- end -}}
+          {{- $linkText = printf "%s %s" $.Title $cap -}}
+        {{- end -}}
         <a href="{{ $url }}">{{ $linkText }}</a>
       </li>
-    {{ end }}
+    {{- end -}}
   </ul>
 {{ end }}

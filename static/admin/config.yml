@@ -1,4 +1,4 @@
-﻿backend:
+backend:
   name: github
   repo: vasilev4569-afk/eugen-standard
   branch: main
@@ -14,42 +14,27 @@ media_folder: "static/uploads"
 public_folder: "/uploads"
 
 collections:
-  - name: "models_en_external_ssd"
-    label: "Models (EN) External SSD"
-    folder: "content/en/data/external-ssd"
+  - name: "reviews_en"
+    label: "Reviews (EN)"
+    folder: "content/en/reviews"
     create: true
-
     nested:
-      depth: 3
-
+      depth: 4
+      subfolders: false
+    meta:
+      path:
+        widget: string
+        label: "Path"
+        index_file: "_index"
     summary: "{{fields.title}}"
-
     fields:
-      - { label: "CMS", name: "cms", widget: "hidden", default: true }
-
       - { label: "Title", name: "title", widget: "string" }
+      - { label: "Breadcrumb Title", name: "breadcrumbTitle", widget: "string", required: false }
       - { label: "Description", name: "description", widget: "string", required: false }
-
-      - label: "Params"
-        name: "params"
-        widget: "object"
-        fields:
-          - { label: "Category", name: "category", widget: "string", default: "external-ssd" }
-          - { label: "Brand", name: "brand", widget: "string" }
-          - { label: "Family", name: "family", widget: "string", required: false }
-          - { label: "Edition", name: "edition", widget: "string", required: false }
-
-      - label: "Specs"
-        name: "specs"
-        widget: "object"
+      - label: "Body"
+        name: "body"
+        widget: "markdown"
         required: false
-
-      - label: "Capacities"
-        name: "capacities"
-        widget: "list"
-        required: false
-        fields:
-          - { label: "Name", name: "name", widget: "string" }
-          - { label: "Capacity (GB)", name: "capacity_gb", widget: "number" }
-
-      - { label: "Body", name: "body", widget: "markdown", required: false }
+        modes: ["raw", "rich_text"]
+        buttons: ["bold", "italic", "heading-two", "heading-three", "quote", "link", "bulleted-list", "numbered-list"]
+        editor_components: ["image", "code-block"]

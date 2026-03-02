@@ -1,6 +1,6 @@
 ---
 title: "Samsung T7 1TB — Review"
-breadcrumbTitle: "1 TB"
+breadcrumbTitle: "1TB"
 description: "Interpretation of measurement data, photo and video review."
 ---
 
