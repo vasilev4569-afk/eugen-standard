@@ -2,8 +2,6 @@
 title: Samsung T7 1TB - Review
 breadcrumbTitle: Samsung T7 1TB
 ---
-# Samsung T7 1TB — Independent Test (Eugen Standard)
-
 **60 seconds.**
 
 That’s how long the Samsung T7 maintains its maximum write speed before its behavior changes. If you copy large files, this moment largely determines how long you will actually wait.
@@ -18,7 +16,7 @@ Here you will find results for sustained writing, reading, small-file performanc
 
 Keeping it strictly practical: a metal enclosure, USB-C, and two included cables. Cable and port choice matters—many “slow SSD” complaints in real life come down to using the wrong cable or the wrong USB port.
 
-Samsung offers 500 GB, 1 TB, and 2 TB versions, plus multiple color options. This test uses the 1 TB version. The real usable capacity after formatting is 931 GiB. This is normal: it’s simply the difference between decimal “terabytes” on the box and binary “gibibytes” reported by the operating system.
+Samsung offers 500 GB, 1 TB, and 2 TB versions, plus multiple color options. This test uses the 1 TB version. The real usable capacity after formatting is **931 GiB**. This is normal: it’s simply the difference between decimal “terabytes” on the box and binary “gibibytes” reported by the operating system.
 
 ---
 
@@ -76,6 +74,6 @@ For this workload as well, we publish the median maximum case temperature in Raw
 
 Summary: the T7 shows predictable behavior during long writes and stable reads. Temperature is documented in the tables as a dedicated maximum-per-test metric.
 
-Finally, pricing. The calculator page includes a price-per-GiB tab: we pull current prices and compute cost per usable capacity. Because prices change, it’s best to check value at the moment you buy.
+Finally, pricing. The calculator page includes a price-per-GiB tab: we pull current prices and compute cost per usable capacity. Because prices change, it’s best to check value **at the moment you buy**.
 
 You can compare the T7 with other models for your data size and your current price on eugen-standard.com, where the raw tables and full methodology are also available.
