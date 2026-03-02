@@ -2,8 +2,6 @@
 title: Samsung T7 1TB - Review
 breadcrumbTitle: Samsung T7 1TB
 ---
-# Samsung T7 1TB — Independent Test (Eugen Standard)
-
 **60 seconds.**
 
 That’s how long the Samsung T7 maintains its maximum write speed before its behavior changes. If you copy large files, this moment largely determines how long you will actually wait.
