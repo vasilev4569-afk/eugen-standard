@@ -1,12 +1,3 @@
 ---
-title: "Samsung T7 1TB — Review"
-breadcrumbTitle: "1TB"
-description: "Interpretation of measurement data, photo and video review."
+title: "333"
 ---
-
-Test review page. Interpretation and video will be added here.
-
-Placeholders for:
-- Product photo(s)
-- YouTube video embed
-- Data interpretation text
