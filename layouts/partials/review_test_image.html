@@ -9,11 +9,20 @@
 {{ if and $brand $model $cap $name }}
   {{ $productPath := printf "external-ssd/%s/%s/%s" $brand $model $cap }}
   {{ $fullUrl := printf "%s/%s/02_test/%s.webp" $imgBase $productPath $name }}
-<div class="review-kit photo-lightbox" data-lightbox-gallery=".review-kit-main img" data-lightbox-triggers=".review-kit-main img" data-lightbox-index="0">
-  <div class="review-kit-main">
-    <figure>
-      <img src="{{ $fullUrl }}" alt="" loading="lazy" decoding="async" data-full="{{ $fullUrl }}" onerror="this.closest('.review-kit').style.display='none';">
-    </figure>
+  {{ $label := "" }}
+  {{ if eq $name "write" }}{{ $label = "Sequential Write (250 GiB)" }}{{ end }}
+  {{ if eq $name "read" }}{{ $label = "Sequential Read (250 GiB)" }}{{ end }}
+  {{ if eq $name "rr4k_qd1" }}{{ $label = "Random Read 4K QD1" }}{{ end }}
+<div class="chart-block">
+  <p class="chart-caption small muted">{{ $label }}</p>
+  <div class="chart">
+    <div class="review-kit review-kit--single photo-lightbox" data-lightbox-gallery=".review-kit-main img" data-lightbox-triggers=".review-kit-main img" data-lightbox-index="0">
+      <div class="review-kit-main">
+        <figure>
+          <img src="{{ $fullUrl }}" alt="" loading="lazy" decoding="async" data-full="{{ $fullUrl }}" onerror="this.closest('.chart-block').style.display='none';">
+        </figure>
+      </div>
+    </div>
   </div>
 </div>
 {{ end }}

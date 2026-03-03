@@ -92,6 +92,13 @@
         {{ $noteHTML = index $noteMatches 0 }}
         {{ $rest = replaceRE $noteRe "" $rest 1 }}
       {{ end }}
+      {{ $noteText := "" }}
+      {{ if $noteHTML }}
+        {{ $noteText = replaceRE `(?s)^\s*<blockquote>\s*<p>(.*?)</p>\s*</blockquote>\s*$` `$1` $noteHTML }}
+        {{ if eq $noteText $noteHTML }}
+          {{ $noteText = replaceRE `(?s)^\s*<blockquote>|</blockquote>\s*$` `` $noteHTML }}
+        {{ end }}
+      {{ end }}
 
       {{ if or $photoURL $metaTable }}
       <div class="review-hero-grid">
@@ -104,10 +111,12 @@
           {{ end }}
         </div>
         <div class="review-hero-spec">
+          <div class="review-hero-spec-card">
           {{ $metaTable | safeHTML }}
-          {{ if $noteHTML }}
-            {{ $noteHTML | safeHTML }}
+          {{ if $noteText }}
+            <p class="review-note">{{ $noteText | safeHTML }}</p>
           {{ end }}
+          </div>
         </div>
       </div>
       {{ end }}
