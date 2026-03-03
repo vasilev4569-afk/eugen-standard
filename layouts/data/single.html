@@ -63,49 +63,63 @@
     {{ $show1   := or (eq $cap "1tb")   $has1 }}
     {{ $show2   := or (eq $cap "2tb")   $has2 }}
 
-    {{ if or $show500 $show1 $show2 }}
-      <nav class="cap-switch" aria-label="{{ i18n "data_capacity_switch" }}">
-        {{ if $show500 }}
-          <a class="cap-btn {{ if eq $cap "500gb" }}is-active{{ end }}" href="{{ $seriesBase }}500gb/">500GB</a>
-        {{ end }}
-        {{ if $show1 }}
-          <a class="cap-btn {{ if eq $cap "1tb" }}is-active{{ end }}" href="{{ $seriesBase }}1tb/">1TB</a>
-        {{ end }}
-        {{ if $show2 }}
-          <a class="cap-btn {{ if eq $cap "2tb" }}is-active{{ end }}" href="{{ $seriesBase }}2tb/">2TB</a>
-        {{ end }}
-      </nav>
-    {{ end }}
-
-    {{/* Short methodology line + optional review link */}}
-    <p class="lead">
-      {{ i18n "data_methodology_prefix" }}
-      <a href="{{ "methodology/" | relLangURL }}">{{ i18n "data_methodology_link" }}</a>.
-    </p>
-    {{ $cat := .Params.category }}
-    {{ $brand := .Params.brand_slug }}
-    {{ $model := .Params.model_slug }}
-    {{ $cap := .Params.capacity_slug }}
-    {{ if not $cat }}
-      {{ $pathTrim := strings.TrimSuffix "/" .RelPermalink }}
-      {{ $pathTrim = strings.TrimPrefix .Site.LanguagePrefix $pathTrim }}
-      {{ $pathTrim = strings.TrimPrefix "/data/" $pathTrim }}
-      {{ $parts := split $pathTrim "/" }}
-      {{ if ge (len $parts) 4 }}
-        {{ $cat = index $parts 0 }}
-        {{ if not $brand }}{{ $brand = index $parts 1 }}{{ end }}
-        {{ if not $model }}{{ $model = index $parts 2 }}{{ end }}
-        {{ if not $cap }}{{ $cap = index $parts 3 }}{{ end }}
+    <div class="data-intro-row">
+      {{ if or $show500 $show1 $show2 }}
+        <nav class="cap-switch" aria-label="{{ i18n "data_capacity_switch" }}">
+          {{ if $show500 }}
+            {{ if eq $cap "500gb" }}
+              <span class="cap-btn is-active" aria-current="page">500GB</span>
+            {{ else }}
+              <a class="cap-btn" href="{{ $seriesBase }}500gb/">500GB</a>
+            {{ end }}
+          {{ end }}
+          {{ if $show1 }}
+            {{ if eq $cap "1tb" }}
+              <span class="cap-btn is-active" aria-current="page">1TB</span>
+            {{ else }}
+              <a class="cap-btn" href="{{ $seriesBase }}1tb/">1TB</a>
+            {{ end }}
+          {{ end }}
+          {{ if $show2 }}
+            {{ if eq $cap "2tb" }}
+              <span class="cap-btn is-active" aria-current="page">2TB</span>
+            {{ else }}
+              <a class="cap-btn" href="{{ $seriesBase }}2tb/">2TB</a>
+            {{ end }}
+          {{ end }}
+        </nav>
       {{ end }}
-    {{ end }}
-    {{ if and $cat $brand $model $cap }}
-      {{ $reviewPath := printf "reviews/%s/%s/%s/%s" $cat $brand $model $cap }}
-      {{ with $.Site.GetPage $reviewPath }}
-        <p class="lead data-review-link">
-          <a href="{{ .RelPermalink }}">{{ i18n "data_review_line" }}</a>
-        </p>
-      {{ end }}
-    {{ end }}
+      <span class="data-intro-actions">
+        <span class="data-intro-pills">
+          {{/* Order: Open review (primary), Compare in calculator (secondary), Methodology (tertiary) */}}
+          {{ $cat := .Params.category }}
+          {{ $brand := .Params.brand_slug }}
+          {{ $model := .Params.model_slug }}
+          {{ $cap := .Params.capacity_slug }}
+          {{ if not $cat }}
+            {{ $pathTrim := strings.TrimSuffix "/" .RelPermalink }}
+            {{ $pathTrim = strings.TrimPrefix .Site.LanguagePrefix $pathTrim }}
+            {{ $pathTrim = strings.TrimPrefix "/data/" $pathTrim }}
+            {{ $parts := split $pathTrim "/" }}
+            {{ if ge (len $parts) 4 }}
+              {{ $cat = index $parts 0 }}
+              {{ if not $brand }}{{ $brand = index $parts 1 }}{{ end }}
+              {{ if not $model }}{{ $model = index $parts 2 }}{{ end }}
+              {{ if not $cap }}{{ $cap = index $parts 3 }}{{ end }}
+            {{ end }}
+          {{ end }}
+          {{ if and $cat $brand $model $cap }}
+            {{ $reviewPath := printf "reviews/%s/%s/%s/%s" $cat $brand $model $cap }}
+            {{ with $.Site.GetPage $reviewPath }}
+              <a class="data-pill data-pill--primary" href="{{ .RelPermalink }}">{{ i18n "data_btn_open_review" }}<span class="data-pill-arrow" aria-hidden="true"> →</span></a>
+            {{ end }}
+          {{ end }}
+          <a class="data-pill data-pill--secondary" href="{{ "calculators/external-ssd/" | relLangURL }}">{{ i18n "data_btn_compare_calculator" }}<span class="data-pill-arrow" aria-hidden="true"> →</span></a>
+          <a class="data-pill data-pill--tertiary" href="{{ "methodology/" | relLangURL }}">{{ i18n "data_btn_methodology_this_test" }}<span class="data-pill-arrow" aria-hidden="true"> →</span></a>
+        </span>
+        <span class="data-intro-desc">{{ i18n "data_raw_only_line" }}</span>
+      </span>
+    </div>
     </div>
   </header>
 
@@ -115,39 +129,42 @@
 
       <h2>{{ i18n "data_test_unit_env" }}</h2>
 
-      <div class="testunit-grid">
+      {{/* Translate meta labels: <th data-meta="x"></th> → <th>i18n</th> */}}
+      {{ $mt := $metaTable }}
+      {{ $metaKeys := findRE `data-meta="([^"]+)"` $mt 999 }}
+      {{ $metaSeen := dict }}
+      {{ range $metaKeys }}
+        {{ $k := replaceRE `^data-meta="([^"]+)".*$` `$1` . }}
+        {{ if not (index $metaSeen $k) }}
+          {{ $metaSeen = merge $metaSeen (dict $k true) }}
+          {{ $from := printf `<th data-meta="%s"></th>` $k }}
+          {{ $to := printf `<th>%s</th>` (i18n (printf "data_meta_%s" $k)) }}
+          {{ $mt = replaceRE $from $to $mt }}
+        {{ end }}
+      {{ end }}
+
+      <div class="testunit-grid{{ if not $photoURL }} testunit-grid-no-photo{{ end }}">
+        {{ if $photoURL }}
         <div class="testunit-left">
-          {{/* Translate meta labels: <th data-meta="x"></th> → <th>i18n</th> */}}
-          {{ $mt := $metaTable }}
-
-          {{ $metaKeys := findRE `data-meta="([^"]+)"` $mt 999 }}
-          {{ $metaSeen := dict }}
-
-          {{ range $metaKeys }}
-            {{ $k := replaceRE `^data-meta="([^"]+)".*$` `$1` . }}
-            {{ if not (index $metaSeen $k) }}
-              {{ $metaSeen = merge $metaSeen (dict $k true) }}
-              {{ $from := printf `<th data-meta="%s"></th>` $k }}
-              {{ $to := printf `<th>%s</th>` (i18n (printf "data_meta_%s" $k)) }}
-              {{ $mt = replaceRE $from $to $mt }}
-            {{ end }}
-          {{ end }}
-
-          {{ $mt | safeHTML }}
-        </div>
-
-        <div class="testunit-right">
-          {{ if $photoURL }}
           <figure class="testunit-photo">
             <img
               class="testunit-photo-img"
               src="{{ $photoURL }}"
-              onerror="this.closest('.testunit-right').style.display='none';"
+              onerror="this.closest('.testunit-left').style.display='none';"
               alt="{{ i18n "data_test_unit_photo" }}"
               loading="lazy"
               decoding="async">
           </figure>
-          {{ end }}
+        </div>
+        {{ end }}
+
+        <div class="testunit-right">
+          <div class="testunit-spec-card">
+            {{ $mt | safeHTML }}
+            {{ with .Params.testunit_note }}
+              <p class="testunit-note">{{ . }}</p>
+            {{ end }}
+          </div>
         </div>
       </div>
 

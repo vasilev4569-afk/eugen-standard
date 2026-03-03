@@ -22,9 +22,9 @@ kitImages:
 | Weight | 58 g |
 | Warranty | 3 years |
 
-> Reference only. Rankings are based on Eugen Standard measurements.
+> Reference only. Conclusions are based on Eugen Standard measurements.
 
-**60 seconds.** That’s how long the Samsung T7 maintains its maximum write speed before its behavior changes. If you copy large files, this moment largely determines how long you will actually wait.
+60 seconds. That’s how long the Samsung T7 maintains its maximum write speed before its behavior changes. If you copy large files, this moment largely determines how long you will actually wait.
 
 In this article, we test the Samsung T7 external SSD (1 TB). You’ll find sustained write behavior, sequential read performance, small-file responsiveness, case temperature data (measured externally), and a comparison via our calculator.
 

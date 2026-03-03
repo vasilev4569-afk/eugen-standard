@@ -100,6 +100,21 @@ other = "methodology"
 [data_review_line]
 other = "Full review (interpretation & video) →"
 
+[data_raw_only_line]
+other = "Raw measurements only. Interpretation is separate."
+
+[data_btn_methodology_this_test]
+other = "Methodology"
+
+[data_btn_open_review]
+other = "Open review"
+
+[data_btn_open_raw_data]
+other = "Open raw data"
+
+[data_btn_compare_calculator]
+other = "Compare in calculator"
+
 [list_no_items]
 other = "No items yet."
 

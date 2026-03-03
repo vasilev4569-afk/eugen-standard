@@ -252,6 +252,25 @@ p{ margin:0 0 12px; }
   max-width:none;
 }
 
+/* Header intro block on data/review pages:
+   Row 1: all buttons (capacity + methodology + open review)
+   Row 2: caption below */
+.data-page .page-header .intro-text{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:8px;
+}
+.data-intro-row{
+  display:flex;
+  flex-wrap:nowrap;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  width:100%;
+}
+.data-intro-row .cap-switch{ margin:0; }
+
 .data-review-link{ margin-top:6px; }
 
 /* Data/Review page: intro photo left, text and table wrap right */
@@ -282,6 +301,39 @@ p{ margin:0 0 12px; }
 .review-page .review-content{ margin-top:20px; }
 .review-page .review-content :first-child{ margin-top:0; }
 .review-page .review-content table{ width:auto; min-width:0; max-width:100%; }
+
+/* Review hero: photo (left) + specs card (right) */
+.review-hero-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:24px;
+  align-items:stretch;
+  margin:16px 0 20px;
+}
+.review-hero-photo,
+.review-hero-spec{
+  display:flex;
+}
+.review-hero-spec{
+  flex-direction:column;
+}
+.review-hero-grid .intro-photo{
+  float:none;
+  margin:0;
+  width:100%;
+  height:100%;
+  min-height:434px;
+}
+.review-page .review-content .review-hero-spec .meta-table{
+  width:100%;
+  max-width:none;
+  margin:0;
+}
+
+@media (max-width: 1100px){
+  .review-hero-grid{ grid-template-columns:1fr; }
+  .review-hero-grid .intro-photo{ min-height:320px; }
+}
 
 /* Review kit photos (01_kit) — 2 per row, 434px (432px content after 1px border) */
 .review-kit{
@@ -398,17 +450,143 @@ code{
 /* ===== Capacity switch ===== */
 .cap-switch{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 18px; }
 .cap-btn{
-  display:inline-block;
-  padding:8px 12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height:40px;
+  padding:0 14px;
   border:1px solid var(--border);
   border-radius:10px;
   background:var(--hover-bg);
   color:var(--text);
+  line-height:1;
+}
+.cap-btn:hover{
+  background:#fbfbfb;
+  text-decoration:none;
+}
+.cap-btn:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 2px var(--accent);
 }
 .cap-btn.is-active{
-  background:var(--accent);
+  background:#3f4555;
   color:var(--bg);
-  border-color:var(--accent);
+  border-color:#3f4555;
+}
+
+/* ===== Data page intro (row of buttons + caption below) ===== */
+.data-intro-desc{
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.4;
+}
+.data-intro-actions{
+  display:flex;
+  align-items:center;
+  position:relative;
+  margin-left:auto;
+}
+.data-intro-actions .data-intro-desc{
+  position:absolute;
+  top:calc(100% + 4px);
+  right:8px;
+  white-space:nowrap;
+}
+.data-intro-pills{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+  white-space:nowrap;
+  margin-left:auto;
+  padding-left:14px;
+  padding-right:8px;
+  position:relative;
+}
+.data-intro-actions .data-intro-pills{
+  margin-left:0;
+}
+.data-intro-pills::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:50%;
+  transform:translateY(-50%);
+  height:24px;
+  width:1px;
+  background:var(--border);
+}
+/* Same style as .cap-btn (capacity switch) */
+.data-pill{
+  display:inline-flex;
+  align-items:center;
+  height:40px;
+  padding:0 14px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:#ffffff;
+  color:var(--text);
+  font-weight:400;
+  line-height:1;
+  text-decoration:none;
+  cursor:pointer;
+  transition:background-color .12s ease, border-color .12s ease, box-shadow .12s ease;
+}
+.data-pill--primary{ background:#fefefe; }
+.data-pill--secondary{}
+.data-pill--tertiary{}
+.data-pill-arrow{
+  margin-left:5px;
+  font-size:1em;
+  font-weight:400;
+  line-height:1;
+  opacity:.9;
+}
+.data-pill:hover{
+  background:#fbfbfb;
+  text-decoration:none;
+}
+.data-pill:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 2px var(--accent);
+}
+
+/* "Reference only..." note style near test tables */
+.data-page .content blockquote,
+.review-page .review-content blockquote{
+  margin:6px 0 8px;
+  padding:0;
+  border:0;
+  font-size:12px;
+  line-height:1.35;
+  color:var(--muted);
+}
+.data-page .content blockquote p,
+.review-page .review-content blockquote p{
+  margin:0;
+}
+@media (max-width: 640px){
+  .data-intro-row{
+    flex-wrap:wrap;
+    justify-content:flex-start;
+    align-items:flex-start;
+  }
+  .data-intro-actions{
+    align-items:flex-start;
+    margin-left:0;
+  }
+  .data-intro-actions .data-intro-desc{
+    position:static;
+    margin-top:6px;
+    white-space:normal;
+  }
+  .data-intro-pills{
+    margin-left:0;
+    padding-left:0;
+    padding-right:0;
+  }
+  .data-intro-pills::before{ display:none; }
 }
 
 /* =========================================================
@@ -496,39 +674,72 @@ th, td{
   align-items:start;
   margin:16px 0 22px;
 }
+.testunit-grid-no-photo{
+  grid-template-columns: 1fr;
+}
 
-.testunit-grid .testunit-left .meta-table,
+.testunit-left,
+.testunit-right{
+  display:flex;
+}
+
+.testunit-spec-card{
+  height:100%;
+  width:100%;
+  display:flex;
+  flex-direction:column;
+}
+
 .testunit-table-wrap .meta-table{
   margin-top:0;
   margin-bottom:0;
 }
 
-.testunit-grid .testunit-left .meta-table tr,
 .testunit-table-wrap .meta-table tr{
-  height:52px;
+  height:auto;
 }
-.testunit-grid .testunit-left .meta-table th,
-.testunit-grid .testunit-left .meta-table td,
 .testunit-table-wrap .meta-table th,
 .testunit-table-wrap .meta-table td{
   padding:10px;
   line-height:1.25;
 }
 
+/* Meta-table in hero: first col white, headers bold */
+.data-page .testunit-grid .meta-table th,
+.review-page .review-content .review-hero-spec .meta-table th{
+  background:#fff;
+  font-weight:600;
+}
+.data-page .testunit-grid .meta-table{
+  margin-top:0;
+  margin-bottom:0;
+}
+.data-page .testunit-grid .meta-table td,
+.review-page .review-content .review-hero-spec .meta-table td{
+  background:#fff;
+}
+
 
 .testunit-photo{
   margin:0;
   width:100%;
+  height:100%;
+  min-height:314px;
   border:1px solid var(--border);
   border-radius:var(--radius);
   background:transparent;
   padding:0;
   overflow:hidden;
-
-  height:314px;
   display:flex;
   align-items:center;
   justify-content:center;
+}
+
+.testunit-note{
+  margin:8px 0 0;
+  font-size:12px;
+  line-height:1.35;
+  color:var(--muted);
 }
 
 .testunit-photo-img{

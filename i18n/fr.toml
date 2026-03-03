@@ -100,6 +100,21 @@ other = "méthodologie"
 [data_review_line]
 other = "Revue complète (analyse & vidéo) →"
 
+[data_raw_only_line]
+other = "Mesures brutes uniquement. L’analyse est à part."
+
+[data_btn_methodology_this_test]
+other = "Méthodologie"
+
+[data_btn_open_review]
+other = "Ouvrir la revue"
+
+[data_btn_open_raw_data]
+other = "Ouvrir les données brutes"
+
+[data_btn_compare_calculator]
+other = "Comparer dans le calculateur"
+
 [list_no_items]
 other = "Aucun élément pour l'instant."
 

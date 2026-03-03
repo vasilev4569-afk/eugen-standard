@@ -100,6 +100,21 @@ other = "Methodik"
 [data_review_line]
 other = "Vollständiger Test (Auswertung & Video) →"
 
+[data_raw_only_line]
+other = "Nur Rohmessungen. Auswertung getrennt."
+
+[data_btn_methodology_this_test]
+other = "Methodik"
+
+[data_btn_open_review]
+other = "Test öffnen"
+
+[data_btn_open_raw_data]
+other = "Rohdaten öffnen"
+
+[data_btn_compare_calculator]
+other = "Im Rechner vergleichen"
+
 [list_no_items]
 other = "Noch keine Einträge."
 

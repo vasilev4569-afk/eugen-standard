@@ -21,37 +21,116 @@
   <article class="review-page">
     <header class="page-header">
       <h1>{{ .Title }}</h1>
+      {{/* Header toolbar: capacity switch (left), actions (right) */}}
+      {{ $capKey := path.Base (strings.TrimSuffix "/" .RelPermalink) }}
+      {{ $seriesBase := replaceRE `(500gb|1tb|2tb)/$` "" .RelPermalink }}
+      {{ $seriesPath := strings.TrimPrefix .Site.LanguagePrefix $seriesBase }}
+      {{ $r500 := .Site.GetPage (printf "%s500gb" $seriesPath) }}
+      {{ $r1 := .Site.GetPage (printf "%s1tb" $seriesPath) }}
+      {{ $r2 := .Site.GetPage (printf "%s2tb" $seriesPath) }}
+      {{ $show500 := or (eq $capKey "500gb") (and $r500 (eq $r500.Kind "page")) }}
+      {{ $show1 := or (eq $capKey "1tb") (and $r1 (eq $r1.Kind "page")) }}
+      {{ $show2 := or (eq $capKey "2tb") (and $r2 (eq $r2.Kind "page")) }}
+
+      {{ $cat := .Params.category }}
+      {{ $brand := .Params.brand_slug }}
+      {{ $model := .Params.model_slug }}
+      {{ $cap := .Params.capacity_slug }}
+      {{ if not $cat }}
+        {{ $pathTrim := strings.TrimSuffix "/" .RelPermalink }}
+        {{ $pathTrim = strings.TrimPrefix .Site.LanguagePrefix $pathTrim }}
+        {{ $pathTrim = strings.TrimPrefix "/reviews/" $pathTrim }}
+        {{ $parts := split $pathTrim "/" }}
+        {{ if ge (len $parts) 4 }}
+          {{ $cat = index $parts 0 }}
+          {{ if not $brand }}{{ $brand = index $parts 1 }}{{ end }}
+          {{ if not $model }}{{ $model = index $parts 2 }}{{ end }}
+          {{ if not $cap }}{{ $cap = index $parts 3 }}{{ end }}
+        {{ end }}
+      {{ end }}
+      {{ $calcCat := or $cat "external-ssd" }}
+
+      <div class="data-intro-row">
+        {{ if or $show500 $show1 $show2 }}
+          <nav class="cap-switch" aria-label="{{ i18n "data_capacity_switch" }}">
+            {{ if $show500 }}{{ if eq $capKey "500gb" }}<span class="cap-btn is-active" aria-current="page">500GB</span>{{ else }}<a class="cap-btn" href="{{ $seriesBase }}500gb/">500GB</a>{{ end }}{{ end }}
+            {{ if $show1 }}{{ if eq $capKey "1tb" }}<span class="cap-btn is-active" aria-current="page">1TB</span>{{ else }}<a class="cap-btn" href="{{ $seriesBase }}1tb/">1TB</a>{{ end }}{{ end }}
+            {{ if $show2 }}{{ if eq $capKey "2tb" }}<span class="cap-btn is-active" aria-current="page">2TB</span>{{ else }}<a class="cap-btn" href="{{ $seriesBase }}2tb/">2TB</a>{{ end }}{{ end }}
+          </nav>
+        {{ end }}
+        <span class="data-intro-pills">
+          {{ if and $cat $brand $model $cap }}
+            {{ $dataPath := printf "data/%s/%s/%s/%s" $cat $brand $model $cap }}
+            {{ with $.Site.GetPage $dataPath }}
+              <a class="data-pill data-pill--primary" href="{{ .RelPermalink }}">{{ i18n "data_btn_open_raw_data" }}<span class="data-pill-arrow" aria-hidden="true"> →</span></a>
+            {{ end }}
+          {{ end }}
+          <a class="data-pill data-pill--secondary" href="{{ printf "calculators/%s/" $calcCat | relLangURL }}">{{ i18n "data_btn_compare_calculator" }}<span class="data-pill-arrow" aria-hidden="true"> →</span></a>
+          <a class="data-pill data-pill--tertiary" href="{{ "methodology/" | relLangURL }}">{{ i18n "data_btn_methodology_this_test" }}<span class="data-pill-arrow" aria-hidden="true"> →</span></a>
+        </span>
+      </div>
       {{ with .Params.description }}<p class="lead">{{ . }}</p>{{ end }}
     </header>
     <section class="review-content">
-      {{ if $photoURL }}
-      <figure class="intro-photo">
-        <img src="{{ $photoURL }}" alt="{{ i18n "data_test_unit_photo" }}" loading="lazy" decoding="async"
-             onerror="this.closest('.intro-photo').style.display='none';">
-      </figure>
-      {{ end }}
       {{ $content := .Content }}
       {{/* Add meta-table class to first table for proper styling and wrap */}}
       {{ $content = replaceRE `(<table)(\s|>)` `$1 class="meta-table"$2` $content 1 }}
+      {{ $metaRe := `(?s)<table class="meta-table".*?</table>` }}
+      {{ $metaMatches := findRE $metaRe $content 1 }}
+      {{ $metaTable := "" }}
+      {{ if gt (len $metaMatches) 0 }}
+        {{ $metaTable = index $metaMatches 0 }}
+      {{ end }}
+      {{ $rest := $content }}
+      {{ if $metaTable }}
+        {{ $rest = replaceRE $metaRe "" $content 1 }}
+      {{ end }}
+      {{ $noteRe := `(?s)^\s*<blockquote>.*?</blockquote>` }}
+      {{ $noteMatches := findRE $noteRe $rest 1 }}
+      {{ $noteHTML := "" }}
+      {{ if gt (len $noteMatches) 0 }}
+        {{ $noteHTML = index $noteMatches 0 }}
+        {{ $rest = replaceRE $noteRe "" $rest 1 }}
+      {{ end }}
+
+      {{ if or $photoURL $metaTable }}
+      <div class="review-hero-grid">
+        <div class="review-hero-photo">
+          {{ if $photoURL }}
+          <figure class="intro-photo">
+            <img src="{{ $photoURL }}" alt="{{ i18n "data_test_unit_photo" }}" loading="lazy" decoding="async"
+                 onerror="this.closest('.intro-photo').style.display='none';">
+          </figure>
+          {{ end }}
+        </div>
+        <div class="review-hero-spec">
+          {{ $metaTable | safeHTML }}
+          {{ if $noteHTML }}
+            {{ $noteHTML | safeHTML }}
+          {{ end }}
+        </div>
+      </div>
+      {{ end }}
+
       {{ $kitHTML := partial "review_kit.html" . }}
       {{ if $kitHTML }}
-        {{ $hasH2 := findRE `(?s)<h2[^>]*>` $content }}
+        {{ $hasH2 := findRE `(?s)<h2[^>]*>` $rest }}
         {{ if $hasH2 }}
           {{/* Kit after first paragraph after first h2 */}}
-          {{ $before := replaceRE `(?s)^(.*?<h2[^>]*>[\s\S]*?</h2>\s*<p>[\s\S]*?</p>)([\s\S]*)$` "$1" $content 1 }}
-          {{ $after := replaceRE `(?s)^(.*?<h2[^>]*>[\s\S]*?</h2>\s*<p>[\s\S]*?</p>)([\s\S]*)$` "$2" $content 1 }}
-          {{ if and $before $after (ne $before $content) }}
+          {{ $before := replaceRE `(?s)^(.*?<h2[^>]*>[\s\S]*?</h2>\s*<p>[\s\S]*?</p>)([\s\S]*)$` "$1" $rest 1 }}
+          {{ $after := replaceRE `(?s)^(.*?<h2[^>]*>[\s\S]*?</h2>\s*<p>[\s\S]*?</p>)([\s\S]*)$` "$2" $rest 1 }}
+          {{ if and $before $after (ne $before $rest) }}
             {{ $before | safeHTML }}{{ $kitHTML }}{{ $after | safeHTML }}
           {{ else }}
-            {{ $before := replaceRE `(?s)^(.*?)(<h2[^>]*>.*)$` "$1" $content 1 }}
-            {{ $after := replaceRE `(?s)^(.*?)(<h2[^>]*>.*)$` "$2" $content 1 }}
+            {{ $before := replaceRE `(?s)^(.*?)(<h2[^>]*>.*)$` "$1" $rest 1 }}
+            {{ $after := replaceRE `(?s)^(.*?)(<h2[^>]*>.*)$` "$2" $rest 1 }}
             {{ $before | safeHTML }}{{ $kitHTML }}{{ $after | safeHTML }}
           {{ end }}
         {{ else }}
-          {{ $content | safeHTML }}{{ $kitHTML }}
+          {{ $rest | safeHTML }}{{ $kitHTML }}
         {{ end }}
       {{ else }}
-        {{ $content | safeHTML }}
+        {{ $rest | safeHTML }}
       {{ end }}
     </section>
     {{ with .Lastmod }}
