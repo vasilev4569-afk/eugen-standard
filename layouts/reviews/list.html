@@ -4,8 +4,7 @@
   {{ $hasBrandSlug := .Param "brand_slug" }}
   {{ $capacitySlug := .Param "capacity_slug" }}
   {{ $noChildren := and (eq (len $sections) 0) (eq (len $pages) 0) }}
-  {{ $inReviews := or (eq .Section "reviews") (strings.Contains .Path "reviews/") }}
-  {{ $isLeafReview := and $inReviews .Content (or $hasBrandSlug (and $noChildren $capacitySlug)) }}
+  {{ $isLeafReview := and .Content (or $hasBrandSlug (and $noChildren $capacitySlug)) }}
 
   {{ if $isLeafReview }}
   {{ $imgBase := or .Site.Params.imgBase "https://eugen-standard.pages.dev" }}
@@ -32,11 +31,13 @@
       </figure>
       {{ end }}
       {{ $content := .Content }}
+      {{/* Add meta-table class to first table for proper styling and wrap */}}
       {{ $content = replaceRE `(<table)(\s|>)` `$1 class="meta-table"$2` $content 1 }}
       {{ $kitHTML := partial "review_kit.html" . }}
       {{ if $kitHTML }}
         {{ $hasH2 := findRE `(?s)<h2[^>]*>` $content }}
         {{ if $hasH2 }}
+          {{/* Kit after first paragraph after first h2 */}}
           {{ $before := replaceRE `(?s)^(.*?<h2[^>]*>[\s\S]*?</h2>\s*<p>[\s\S]*?</p>)([\s\S]*)$` "$1" $content 1 }}
           {{ $after := replaceRE `(?s)^(.*?<h2[^>]*>[\s\S]*?</h2>\s*<p>[\s\S]*?</p>)([\s\S]*)$` "$2" $content 1 }}
           {{ if and $before $after (ne $before $content) }}
@@ -57,30 +58,52 @@
       <footer class="meta"><p class="small muted">{{ i18n "data_last_updated" }}: {{ .Format "2006-01-02" }}</p></footer>
     {{ end }}
   </article>
-
   {{ else }}
-  <h1>{{ .Title }}</h1>
-  {{ if .Content }}<div>{{ .Content }}</div>{{ end }}
-  <ul class="linklist">
-    {{- range .Pages -}}
-      <li>
-        {{- $url := .RelPermalink -}}
-        {{- if eq $.Section "calculators" -}}
-          {{- if and (eq .Kind "section") (eq (len .RegularPages) 1) (eq (.Param "layout") "redirect-to-first-child") -}}
-            {{- $url = (index .RegularPages 0).RelPermalink -}}
-          {{- end -}}
-        {{- end -}}
-        {{- $linkText := .Title -}}
-        {{- if and $inReviews (eq .Kind "page") -}}
-          {{- $cap := .Param "breadcrumbtitle" -}}
-          {{- if not $cap -}}
-            {{- $cap = path.Base (strings.TrimSuffix "/" .File.Dir) -}}
-          {{- end -}}
-          {{- $linkText = printf "%s %s" $.Title $cap -}}
-        {{- end -}}
-        <a href="{{ $url }}">{{ $linkText }}</a>
-      </li>
+  {{ $tkey := .Params.titleKey }}
+  <h1>
+    {{- if $tkey -}}
+      {{ i18n $tkey }}
+    {{- else -}}
+      {{ .Title }}
     {{- end -}}
-  </ul>
+  </h1>
+
+  {{ if .Content }}
+    <div>{{ .Content }}</div>
+  {{ end }}
+
+  {{ if or (gt (len $sections) 0) (gt (len $pages) 0) }}
+    <ul class="linklist">
+
+      {{ range $sections.ByTitle }}
+        <li>
+          <a href="{{ .RelPermalink }}">
+            {{- $sk := .Params.titleKey -}}
+            {{- if $sk -}}
+              {{ i18n $sk }}
+            {{- else -}}
+              {{ .Title }}
+            {{- end -}}
+          </a>
+        </li>
+      {{ end }}
+
+      {{ range $pages.ByTitle }}
+        <li>
+          <a href="{{ .RelPermalink }}">
+            {{ $cap := .Param "breadcrumbtitle" }}
+            {{ if not $cap }}
+              {{ $cap = path.Base (strings.TrimSuffix "/" .File.Dir) }}
+            {{ end }}
+            {{ printf "%s %s" $.Title $cap }}
+          </a>
+        </li>
+      {{ end }}
+
+    </ul>
+  {{ else }}
+    <p>{{ i18n "list_no_items" | default "No items yet." }}</p>
+  {{ end }}
+
   {{ end }}
 {{ end }}

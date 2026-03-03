@@ -1,0 +1,24 @@
+{{/* Renders 01_kit photos block. Uses data/kit-images.json (from photo.py) or fallback to .Params.kitimages */}}
+{{ $imgBase := or .Site.Params.imgBase "https://eugen-standard.pages.dev" }}
+{{ $imgBase = strings.TrimSuffix "/" $imgBase }}
+{{ $brand := .Param "brand_slug" }}
+{{ $model := .Param "model_slug" }}
+{{ $cap := .Param "capacity_slug" }}
+{{ $productPath := printf "external-ssd/%s/%s/%s" $brand $model $cap }}
+{{ $imgs := "" }}
+{{ with .Site.Data.kit_images }}
+  {{ $imgs = index . $productPath }}
+{{ end }}
+{{ if not $imgs }}
+  {{ $imgs = .Param "kitimages" }}
+{{ end }}
+{{ if and $brand $model $cap $imgs }}
+<div class="review-kit photo-lightbox">
+  {{ range $imgs }}
+  {{ $fullUrl := printf "%s/%s/01_kit/%s" $imgBase $productPath . }}
+  <figure>
+    <img src="{{ $fullUrl }}" alt="" loading="lazy" decoding="async" data-full="{{ $fullUrl }}">
+  </figure>
+  {{ end }}
+</div>
+{{ end }}

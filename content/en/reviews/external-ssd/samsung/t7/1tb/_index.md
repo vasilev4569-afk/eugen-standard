@@ -2,33 +2,43 @@
 title: "Samsung T7 1TB — Review"
 breadcrumbTitle: "1TB"
 description: ""
+category: "external-ssd"
+brand_slug: "samsung"
+model_slug: "t7"
+capacity_slug: "1tb"
+kitImages:
+  - "bottom.webp"
+  - "cables.webp"
 ---
 
-**60 seconds.**
+| Spec | Value |
+|---|---|
+| Model code | MU-PC1T0H/WW |
+| Interface / connector | USB-C / USB 3.2 Gen 2 |
+| Claimed write speed | up to 1,000 MB/s |
+| Claimed read speed | up to 1,050 MB/s |
+| Security | 256-bit AES encryption |
+| Dimensions (L×W×H) | 85 × 57 × 8 mm |
+| Weight | 58 g |
+| Warranty | 3 years |
 
-That’s how long the Samsung T7 maintains its maximum write speed before its behavior changes. If you copy large files, this moment largely determines how long you will actually wait.
+> Reference only. Rankings are based on Eugen Standard measurements.
+
+**60 seconds.** That’s how long the Samsung T7 maintains its maximum write speed before its behavior changes. If you copy large files, this moment largely determines how long you will actually wait.
 
 In this article, we test the Samsung T7 external SSD (1 TB). You’ll find sustained write behavior, sequential read performance, small-file responsiveness, case temperature data (measured externally), and a comparison via our calculator.
 
----
-
 ## Device, accessories, versions
-
-This is a practical, hardware-only section.
 
 The T7 uses a metal enclosure and a USB-C connection. The box typically includes two cables (USB-C→USB-C and USB-C→USB-A). Cable and port choice matters—many “slow SSD” cases in real life are simply the wrong cable or the wrong USB port.
 
 Samsung sells 500 GB, 1 TB, and 2 TB versions and multiple colors. This test unit is the 1 TB model. The usable capacity after formatting is **931 GiB**. That difference is normal: it’s the gap between decimal “TB” on the box and binary “GiB” reported by the OS.
-
----
 
 ## Methodology
 
 All measurements were performed on Windows 10 using Fio (repeatable workload definitions). Each test is run at least three times, and this article references median values. Full raw tables (including all attempts) and methodology are published on eugen-standard.com under Raw Data and Methodology.
 
 We also publish heat data. Case temperature is measured using an external instrument (not internal sensors). For each test, we report the **median maximum case temperature** in Raw Data.
-
----
 
 ## Sequential Write (250 GiB)
 

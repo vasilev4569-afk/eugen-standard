@@ -1,0 +1,58 @@
+{{/* Overlay for photo lightbox (review, best). Arrows/click zones/buttons to navigate. */}}
+<div class="photo-overlay" id="photo-overlay" aria-hidden="true" role="dialog" aria-label="Full size image">
+  <button type="button" class="photo-overlay-prev" aria-label="Previous image">&lsaquo;</button>
+  <div class="photo-overlay-inner">
+    <img src="" alt="" class="photo-overlay-img">
+  </div>
+  <button type="button" class="photo-overlay-next" aria-label="Next image">&rsaquo;</button>
+</div>
+<script>
+(function(){
+  var overlay=document.getElementById("photo-overlay");
+  var overlayInner=overlay&&overlay.querySelector(".photo-overlay-inner");
+  var overlayImg=overlay&&overlay.querySelector(".photo-overlay-img");
+  var btnPrev=overlay&&overlay.querySelector(".photo-overlay-prev");
+  var btnNext=overlay&&overlay.querySelector(".photo-overlay-next");
+  if(!overlay||!overlayImg)return;
+  var currentUrls=[];
+  var currentIndex=0;
+  function showImage(){
+    if(currentUrls.length===0)return;
+    currentIndex=(currentIndex+currentUrls.length)%currentUrls.length;
+    overlayImg.src=currentUrls[currentIndex];
+    var showBtns=currentUrls.length>1;
+    if(btnPrev){ btnPrev.style.visibility=showBtns?"visible":"hidden"; btnPrev.disabled=!showBtns; }
+    if(btnNext){ btnNext.style.visibility=showBtns?"visible":"hidden"; btnNext.disabled=!showBtns; }
+  }
+  function prev(){ if(currentUrls.length>1){ currentIndex--; showImage(); } }
+  function next(){ if(currentUrls.length>1){ currentIndex++; showImage(); } }
+  document.querySelectorAll(".photo-lightbox").forEach(function(block){
+    var imgs=block.querySelectorAll("img");
+    imgs.forEach(function(img,idx){
+      img.addEventListener("click",function(e){
+        e.stopPropagation();
+        currentUrls=Array.from(imgs).map(function(i){ return i.dataset.full||i.src; });
+        currentIndex=idx;
+        showImage();
+        overlay.classList.add("is-open");
+        overlay.setAttribute("aria-hidden","false");
+      });
+    });
+  });
+  function closeOverlay(){
+    overlay.classList.remove("is-open");
+    overlay.setAttribute("aria-hidden","true");
+  }
+  overlay.addEventListener("click",function(e){
+    if(e.target===overlay||e.target===overlayImg||e.target===overlayInner)closeOverlay();
+  });
+  if(btnPrev){ btnPrev.addEventListener("click",function(e){ e.stopPropagation(); prev(); }); }
+  if(btnNext){ btnNext.addEventListener("click",function(e){ e.stopPropagation(); next(); }); }
+  document.addEventListener("keydown",function(e){
+    if(!overlay.classList.contains("is-open"))return;
+    if(e.key==="Escape")closeOverlay();
+    else if(e.key==="ArrowLeft"){ e.preventDefault(); prev(); }
+    else if(e.key==="ArrowRight"){ e.preventDefault(); next(); }
+  });
+})();
+</script>

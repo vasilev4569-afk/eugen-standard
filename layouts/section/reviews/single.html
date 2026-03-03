@@ -1,14 +1,55 @@
 {{ define "main" }}
+{{ $imgBase := or .Site.Params.imgBase "https://eugen-standard.pages.dev" }}
+{{ $imgBase = strings.TrimSuffix "/" $imgBase }}
+{{ $brand := .Param "brand_slug" }}
+{{ $model := .Param "model_slug" }}
+{{ $cap := .Param "capacity_slug" }}
+{{ $photoURL := "" }}
+{{ if and $brand $model $cap }}
+  {{ $productPath := printf "external-ssd/%s/%s/%s" $brand $model $cap }}
+  {{ $photoURL = printf "%s/%s/unit.webp" $imgBase $productPath }}
+{{ end }}
+
 <article class="review-page">
   <header class="page-header">
     <h1>{{ .Title }}</h1>
+
+    <div class="intro-with-photo">
+      {{ if $photoURL }}
+      <figure class="intro-photo">
+        <img src="{{ $photoURL }}" alt="{{ i18n "data_test_unit_photo" }}" loading="lazy" decoding="async"
+             onerror="this.closest('.intro-photo').style.display='none';">
+      </figure>
+      {{ end }}
+      <div class="intro-text">
     {{ with .Params.description }}
       <p class="lead">{{ . }}</p>
     {{ end }}
+      </div>
+    </div>
   </header>
 
   <section class="review-content">
-    {{ .Content }}
+    {{ $content := .Content }}
+    {{ $kitHTML := partial "review_kit.html" . }}
+    {{ if $kitHTML }}
+      {{ $hasH2 := findRE `(?s)<h2[^>]*>` $content }}
+      {{ if $hasH2 }}
+        {{ $before := replaceRE `(?s)^(.*?<h2[^>]*>[\s\S]*?</h2>\s*<p>[\s\S]*?</p>)([\s\S]*)$` "$1" $content 1 }}
+        {{ $after := replaceRE `(?s)^(.*?<h2[^>]*>[\s\S]*?</h2>\s*<p>[\s\S]*?</p>)([\s\S]*)$` "$2" $content 1 }}
+        {{ if and $before $after (ne $before $content) }}
+          {{ $before | safeHTML }}{{ $kitHTML }}{{ $after | safeHTML }}
+        {{ else }}
+          {{ $before := replaceRE `(?s)^(.*?)(<h2[^>]*>.*)$` "$1" $content 1 }}
+          {{ $after := replaceRE `(?s)^(.*?)(<h2[^>]*>.*)$` "$2" $content 1 }}
+          {{ $before | safeHTML }}{{ $kitHTML }}{{ $after | safeHTML }}
+        {{ end }}
+      {{ else }}
+        {{ $content | safeHTML }}{{ $kitHTML }}
+      {{ end }}
+    {{ else }}
+      {{ $content | safeHTML }}
+    {{ end }}
   </section>
 
   {{ with .Lastmod }}

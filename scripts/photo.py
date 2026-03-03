@@ -8,11 +8,17 @@
 #
 # R2 structure:
 # external-ssd/<brand>/<model>/<capacity>/unit.webp
+# external-ssd/<brand>/<model>/<capacity>/01_kit/<name>.webp  (review kit photos)
+#
+# Drive RAW for kit photos (all images converted to .webp):
+# 01_RAW_Photos/external-ssd/<brand>/<model>/<capacity>/01_kit/*.{jpg,jpeg,avif,webp,png}
 
+import json
 import subprocess
+import sys
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 # ====== CONFIG ======
 GDRIVE_ROOT = "gdrive:eugen-standard"
@@ -31,6 +37,10 @@ WEBP_Q = 85            # 1..100
 
 RAW_NAME = "unit.jpg"   # what you upload to Drive RAW
 OUT_NAME = "unit.webp"  # what we generate and publish
+KIT_SUBDIR = "01_kit"   # subfolder for review "external appearance" photos
+WATERMARK = "eugen-standard.com"
+# Gray semi-transparent (matches site --muted #6b7280)
+WATERMARK_COLOR = (107, 114, 128, 140)  # rgba
 # ====================
 
 
@@ -45,8 +55,53 @@ def ensure_dirs() -> None:
     LOCAL_PROC.mkdir(parents=True, exist_ok=True)
 
 
+def rel_dir_lower(rel: Path) -> Path:
+    """Normalize path to lowercase for consistent output (R2, Drive are case-sensitive)."""
+    return Path(*[p.lower() for p in rel.parts])
+
+
+def _get_watermark_font(size: int = 24) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+    """Load font matching site logo (system-ui, Segoe UI, Roboto, Arial)."""
+    paths: list[str] = []
+    if sys.platform == "win32":
+        # Segoe UI (logo font on Windows), Arial fallback
+        paths = ["C:/Windows/Fonts/segoeui.ttf", "C:/Windows/Fonts/segoeuib.ttf", "C:/Windows/Fonts/arial.ttf"]
+    elif sys.platform == "darwin":
+        # SF Pro / Helvetica (logo font on macOS)
+        paths = ["/System/Library/Fonts/Helvetica.ttc", "/System/Library/Fonts/SFNSDisplay-Regular.otf", "/System/Library/Fonts/Supplemental/Arial.ttf"]
+    else:
+        # Roboto, Liberation Sans (Arial-like), DejaVu
+        paths = [
+            "/usr/share/fonts/truetype/roboto/Roboto-Regular.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        ]
+    for p in paths:
+        try:
+            return ImageFont.truetype(p, size)
+        except OSError:
+            continue
+    return ImageFont.load_default()
+
+
+def add_watermark(img: Image.Image) -> Image.Image:
+    """Draw gray semi-transparent watermark in bottom-right corner (matches site logo font)."""
+    img_rgba = img.convert("RGBA")
+    overlay = Image.new("RGBA", img_rgba.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+    font = _get_watermark_font(max(14, min(28, img_rgba.width // 40)))
+    bbox = draw.textbbox((0, 0), WATERMARK, font=font)
+    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+    pad = max(8, img_rgba.width // 80)
+    x = max(0, img_rgba.width - tw - pad)
+    y = max(0, img_rgba.height - th - pad)
+    draw.text((x, y), WATERMARK, fill=WATERMARK_COLOR, font=font)
+    img_rgba = Image.alpha_composite(img_rgba, overlay)
+    return img_rgba.convert("RGB")
+
+
 def convert_one(src: Path, dst: Path) -> None:
-    """Convert src (jpg) -> dst (webp), resize down to MAX_WIDTH if needed."""
+    """Convert src (jpg/avif/webp/png) -> dst (webp), resize down to MAX_WIDTH if needed."""
     dst.parent.mkdir(parents=True, exist_ok=True)
 
     with Image.open(src) as img:
@@ -66,10 +121,14 @@ def convert_one(src: Path, dst: Path) -> None:
             new_h = int(h * (MAX_WIDTH / w))
             img = img.resize((MAX_WIDTH, new_h), Image.LANCZOS)
 
+        img = add_watermark(img)
         img.save(dst, "WEBP", quality=WEBP_Q, method=6)
 
 
 def main() -> None:
+    force = "--force" in sys.argv
+    if force:
+        print("Force mode: re-converting all images (watermark will be applied)")
     ensure_dirs()
 
     # 1) Pull RAW from Drive -> local
@@ -83,15 +142,64 @@ def main() -> None:
     for src in LOCAL_RAW.rglob(RAW_NAME):
         scanned += 1
 
-        # Mirror directory structure under LOCAL_PROC
-        # e.g. external-ssd/samsung/t7/1tb/unit.jpg
+        # Mirror directory structure under LOCAL_PROC (lowercase for R2/Drive compatibility)
         rel_dir = src.parent.relative_to(LOCAL_RAW)
-        dst = LOCAL_PROC / rel_dir / OUT_NAME
+        dst = LOCAL_PROC / rel_dir_lower(rel_dir) / OUT_NAME
 
-        # Convert if output missing OR input newer than output
-        if (not dst.exists()) or (src.stat().st_mtime > dst.stat().st_mtime):
+        # Convert if output missing OR input newer than output OR --force
+        if force or (not dst.exists()) or (src.stat().st_mtime > dst.stat().st_mtime):
             convert_one(src, dst)
             converted += 1
+
+    # 2b) Convert 01_kit/*.{jpg,jpeg,avif,webp,png} -> 01_kit/*.webp (all review kit photos)
+    KIT_EXTS = ("*.jpg", "*.jpeg", "*.avif", "*.webp", "*.png")
+    kit_manifest: dict[str, list[str]] = {}  # product_path -> sorted list of .webp filenames
+    raw_kit_dirs = set()  # proc paths that have a corresponding raw 01_kit
+
+    for kit_dir in LOCAL_RAW.rglob(KIT_SUBDIR):
+        if not kit_dir.is_dir():
+            continue
+        # Clear proc/01_kit so it matches RAW (removes files deleted on Drive)
+        rel_dir = kit_dir.parent.relative_to(LOCAL_RAW)
+        proc_kit_dir = LOCAL_PROC / rel_dir_lower(rel_dir) / KIT_SUBDIR
+        raw_kit_dirs.add(proc_kit_dir.resolve())
+        if proc_kit_dir.exists():
+            for f in proc_kit_dir.glob("*.webp"):
+                f.unlink()
+        for ext in KIT_EXTS:
+            for src in kit_dir.glob(ext):
+                scanned += 1
+                rel_dir = src.parent.relative_to(LOCAL_RAW)
+                dst = LOCAL_PROC / rel_dir_lower(rel_dir) / (src.stem + ".webp")
+                if force or (not dst.exists()) or (src.stat().st_mtime > dst.stat().st_mtime):
+                    convert_one(src, dst)
+                    converted += 1
+
+    # Remove orphaned proc 01_kit dirs (entire folder deleted on Drive)
+    for proc_kit_dir in LOCAL_PROC.rglob(KIT_SUBDIR):
+        if proc_kit_dir.is_dir() and proc_kit_dir.resolve() not in raw_kit_dirs:
+            for f in proc_kit_dir.glob("*.webp"):
+                f.unlink()
+            try:
+                proc_kit_dir.rmdir()
+            except OSError:
+                pass
+
+    # 2c) Build kit manifest from processed 01_kit/*.webp (for Hugo to auto-display all photos)
+    for kit_dir in LOCAL_PROC.rglob(KIT_SUBDIR):
+        if not kit_dir.is_dir():
+            continue
+        rel_dir = kit_dir.parent.relative_to(LOCAL_PROC)
+        product_path = str(rel_dir).replace("\\", "/")
+        files = sorted(f.name for f in kit_dir.glob("*.webp"))
+        if files:
+            kit_manifest[product_path] = files
+
+    if kit_manifest:
+        manifest_path = Path("data/kit_images.json")
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
+        manifest_path.write_text(json.dumps(kit_manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(f"Kit manifest: {manifest_path} ({len(kit_manifest)} products)")
 
     print(f"RAW files found: {scanned}")
     print(f"Converted: {converted}")

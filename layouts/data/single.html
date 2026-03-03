@@ -45,6 +45,7 @@
   <header class="page-header">
     <h1>{{ .Title }}</h1>
 
+    <div class="intro-text">
     {{/* Capacity switch (same series: 500GB/1TB/2TB) */}}
     {{ $cap := path.Base (strings.TrimSuffix "/" .RelPermalink) }}
     {{ $seriesBase := replaceRE `(500gb|1tb|2tb)/$` "" .RelPermalink }}
@@ -105,6 +106,7 @@
         </p>
       {{ end }}
     {{ end }}
+    </div>
   </header>
 
   <section class="content">
@@ -115,7 +117,6 @@
 
       <div class="testunit-grid">
         <div class="testunit-left">
-
           {{/* Translate meta labels: <th data-meta="x"></th> → <th>i18n</th> */}}
           {{ $mt := $metaTable }}
 
@@ -133,10 +134,10 @@
           {{ end }}
 
           {{ $mt | safeHTML }}
-
         </div>
 
         <div class="testunit-right">
+          {{ if $photoURL }}
           <figure class="testunit-photo">
             <img
               class="testunit-photo-img"
@@ -146,6 +147,7 @@
               loading="lazy"
               decoding="async">
           </figure>
+          {{ end }}
         </div>
       </div>
 
