@@ -1,0 +1,19 @@
+{{/* Single test photo block from 02_test/<name>.webp */}}
+{{ $p := .Page }}
+{{ $name := .Name }}
+{{ $imgBase := or $p.Site.Params.imgBase "https://eugen-standard.pages.dev" }}
+{{ $imgBase = strings.TrimSuffix "/" $imgBase }}
+{{ $brand := $p.Param "brand_slug" }}
+{{ $model := $p.Param "model_slug" }}
+{{ $cap := $p.Param "capacity_slug" }}
+{{ if and $brand $model $cap $name }}
+  {{ $productPath := printf "external-ssd/%s/%s/%s" $brand $model $cap }}
+  {{ $fullUrl := printf "%s/%s/02_test/%s.webp" $imgBase $productPath $name }}
+<div class="review-kit photo-lightbox" data-lightbox-gallery=".review-kit-main img" data-lightbox-triggers=".review-kit-main img" data-lightbox-index="0">
+  <div class="review-kit-main">
+    <figure>
+      <img src="{{ $fullUrl }}" alt="" loading="lazy" decoding="async" data-full="{{ $fullUrl }}" onerror="this.closest('.review-kit').style.display='none';">
+    </figure>
+  </div>
+</div>
+{{ end }}

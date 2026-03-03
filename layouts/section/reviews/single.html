@@ -79,25 +79,42 @@
 
   <section class="review-content">
     {{ $content := .Content }}
+    {{ $testWrite := partial "review_test_image.html" (dict "Page" . "Name" "write") }}
+    {{ $testRead := partial "review_test_image.html" (dict "Page" . "Name" "read") }}
+    {{ $testRr4k := partial "review_test_image.html" (dict "Page" . "Name" "rr4k_qd1") }}
+    {{ $h2Blocks := findRE `(?s)<h2[^>]*>.*?</h2>` $content }}
+    {{ if ge (len $h2Blocks) 4 }}
+      {{ $target := index $h2Blocks 3 }}
+      {{ $content = replace $content $target (printf "%s%s" $testWrite $target) }}
+    {{ end }}
+    {{ if ge (len $h2Blocks) 5 }}
+      {{ $target := index $h2Blocks 4 }}
+      {{ $content = replace $content $target (printf "%s%s" $testRead $target) }}
+    {{ end }}
+    {{ if ge (len $h2Blocks) 6 }}
+      {{ $target := index $h2Blocks 5 }}
+      {{ $content = replace $content $target (printf "%s%s" $testRr4k $target) }}
+    {{ end }}
     {{ $kitHTML := partial "review_kit.html" . }}
+    {{ $rendered := $content }}
     {{ if $kitHTML }}
       {{ $hasH2 := findRE `(?s)<h2[^>]*>` $content }}
       {{ if $hasH2 }}
         {{ $before := replaceRE `(?s)^(.*?<h2[^>]*>[\s\S]*?</h2>\s*<p>[\s\S]*?</p>)([\s\S]*)$` "$1" $content 1 }}
         {{ $after := replaceRE `(?s)^(.*?<h2[^>]*>[\s\S]*?</h2>\s*<p>[\s\S]*?</p>)([\s\S]*)$` "$2" $content 1 }}
         {{ if and $before $after (ne $before $content) }}
-          {{ $before | safeHTML }}{{ $kitHTML }}{{ $after | safeHTML }}
+          {{ $rendered = printf "%s%s%s" $before $kitHTML $after }}
         {{ else }}
           {{ $before := replaceRE `(?s)^(.*?)(<h2[^>]*>.*)$` "$1" $content 1 }}
           {{ $after := replaceRE `(?s)^(.*?)(<h2[^>]*>.*)$` "$2" $content 1 }}
-          {{ $before | safeHTML }}{{ $kitHTML }}{{ $after | safeHTML }}
+          {{ $rendered = printf "%s%s%s" $before $kitHTML $after }}
         {{ end }}
       {{ else }}
-        {{ $content | safeHTML }}{{ $kitHTML }}
+        {{ $rendered = printf "%s%s" $content $kitHTML }}
       {{ end }}
-    {{ else }}
-      {{ $content | safeHTML }}
     {{ end }}
+    {{ $rendered = partial "review_section_cards.html" (dict "HTML" $rendered) }}
+    {{ $rendered | safeHTML }}
   </section>
 
   {{ with .Lastmod }}

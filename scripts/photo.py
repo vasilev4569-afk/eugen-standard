@@ -8,10 +8,12 @@
 #
 # R2 structure:
 # external-ssd/<brand>/<model>/<capacity>/unit.webp
-# external-ssd/<brand>/<model>/<capacity>/01_kit/<name>.webp  (review kit photos)
+# external-ssd/<brand>/<model>/<capacity>/<any_subfolder>/<name>.webp
 #
-# Drive RAW for kit photos (all images converted to .webp):
-# 01_RAW_Photos/external-ssd/<brand>/<model>/<capacity>/01_kit/*.{jpg,jpeg,avif,webp,png}
+# Drive RAW:
+# 01_RAW_Photos/external-ssd/<brand>/<model>/<capacity>/unit.jpg
+# 01_RAW_Photos/external-ssd/<brand>/<model>/<capacity>/<any_subfolder>/*.{jpg,jpeg,avif,webp,png}
+# All subfolders are mirrored automatically into 02_Processed_WebP and R2.
 
 import json
 import subprocess
@@ -38,6 +40,7 @@ WEBP_Q = 85            # 1..100
 RAW_NAME = "unit.jpg"   # what you upload to Drive RAW
 OUT_NAME = "unit.webp"  # what we generate and publish
 KIT_SUBDIR = "01_kit"   # subfolder for review "external appearance" photos
+IMAGE_EXTS = {".jpg", ".jpeg", ".avif", ".webp", ".png"}
 WATERMARK = "eugen-standard.com"
 # Gray semi-transparent (matches site --muted #6b7280)
 WATERMARK_COLOR = (107, 114, 128, 140)  # rgba
@@ -135,57 +138,37 @@ def main() -> None:
     # NOTE: --checksum avoids relying on timestamps from cloud providers.
     run(["rclone", "sync", RAW_ROOT, str(LOCAL_RAW), "--checksum"])
 
-    # 2) Convert unit.jpg -> unit.webp while mirroring folders
+    # 2) Convert all RAW images while mirroring folders (auto-includes all model subfolders)
     converted = 0
     scanned = 0
+    expected_webp: set[Path] = set()
 
-    for src in LOCAL_RAW.rglob(RAW_NAME):
+    for src in LOCAL_RAW.rglob("*"):
+        if not src.is_file() or src.suffix.lower() not in IMAGE_EXTS:
+            continue
         scanned += 1
 
-        # Mirror directory structure under LOCAL_PROC (lowercase for R2/Drive compatibility)
         rel_dir = src.parent.relative_to(LOCAL_RAW)
-        dst = LOCAL_PROC / rel_dir_lower(rel_dir) / OUT_NAME
+        dst_dir = LOCAL_PROC / rel_dir_lower(rel_dir)
+        if src.name.lower() == RAW_NAME:
+            dst = dst_dir / OUT_NAME
+        else:
+            dst = dst_dir / (src.stem + ".webp")
+
+        expected_webp.add(dst.resolve())
 
         # Convert if output missing OR input newer than output OR --force
         if force or (not dst.exists()) or (src.stat().st_mtime > dst.stat().st_mtime):
             convert_one(src, dst)
             converted += 1
 
-    # 2b) Convert 01_kit/*.{jpg,jpeg,avif,webp,png} -> 01_kit/*.webp (all review kit photos)
-    KIT_EXTS = ("*.jpg", "*.jpeg", "*.avif", "*.webp", "*.png")
-    kit_manifest: dict[str, list[str]] = {}  # product_path -> sorted list of .webp filenames
-    raw_kit_dirs = set()  # proc paths that have a corresponding raw 01_kit
-
-    for kit_dir in LOCAL_RAW.rglob(KIT_SUBDIR):
-        if not kit_dir.is_dir():
-            continue
-        # Clear proc/01_kit so it matches RAW (removes files deleted on Drive)
-        rel_dir = kit_dir.parent.relative_to(LOCAL_RAW)
-        proc_kit_dir = LOCAL_PROC / rel_dir_lower(rel_dir) / KIT_SUBDIR
-        raw_kit_dirs.add(proc_kit_dir.resolve())
-        if proc_kit_dir.exists():
-            for f in proc_kit_dir.glob("*.webp"):
-                f.unlink()
-        for ext in KIT_EXTS:
-            for src in kit_dir.glob(ext):
-                scanned += 1
-                rel_dir = src.parent.relative_to(LOCAL_RAW)
-                dst = LOCAL_PROC / rel_dir_lower(rel_dir) / (src.stem + ".webp")
-                if force or (not dst.exists()) or (src.stat().st_mtime > dst.stat().st_mtime):
-                    convert_one(src, dst)
-                    converted += 1
-
-    # Remove orphaned proc 01_kit dirs (entire folder deleted on Drive)
-    for proc_kit_dir in LOCAL_PROC.rglob(KIT_SUBDIR):
-        if proc_kit_dir.is_dir() and proc_kit_dir.resolve() not in raw_kit_dirs:
-            for f in proc_kit_dir.glob("*.webp"):
-                f.unlink()
-            try:
-                proc_kit_dir.rmdir()
-            except OSError:
-                pass
+    # 2b) Remove orphaned processed files to keep output mirrored to RAW
+    for proc_webp in LOCAL_PROC.rglob("*.webp"):
+        if proc_webp.resolve() not in expected_webp:
+            proc_webp.unlink()
 
     # 2c) Build kit manifest from processed 01_kit/*.webp (for Hugo to auto-display all photos)
+    kit_manifest: dict[str, list[str]] = {}  # product_path -> sorted list of .webp filenames
     for kit_dir in LOCAL_PROC.rglob(KIT_SUBDIR):
         if not kit_dir.is_dir():
             continue

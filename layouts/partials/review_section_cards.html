@@ -1,0 +1,19 @@
+{{- $html := .HTML -}}
+{{- $parts := split $html "<h2" -}}
+{{- if le (len $parts) 1 -}}
+  {{- $html | safeHTML -}}
+{{- else -}}
+  {{- $out := index $parts 0 -}}
+  {{- range after 1 $parts -}}
+    {{- $section := printf "<h2%s" . -}}
+    {{- $chunks := split $section "</h2>" -}}
+    {{- if ge (len $chunks) 2 -}}
+      {{- $head := printf "%s</h2>" (index $chunks 0) -}}
+      {{- $body := delimit (after 1 $chunks) "</h2>" -}}
+      {{- $out = printf `%s<section class="section-card"><div class="section-card-head">%s</div><div class="section-card-body">%s</div></section>` $out $head $body -}}
+    {{- else -}}
+      {{- $out = printf `%s<section class="section-card"><div class="section-card-body">%s</div></section>` $out $section -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $out | safeHTML -}}
+{{- end -}}

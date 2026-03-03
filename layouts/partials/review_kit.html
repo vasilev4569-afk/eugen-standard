@@ -13,12 +13,85 @@
   {{ $imgs = .Param "kitimages" }}
 {{ end }}
 {{ if and $brand $model $cap $imgs }}
-<div class="review-kit photo-lightbox">
-  {{ range $imgs }}
-  {{ $fullUrl := printf "%s/%s/01_kit/%s" $imgBase $productPath . }}
-  <figure>
-    <img src="{{ $fullUrl }}" alt="" loading="lazy" decoding="async" data-full="{{ $fullUrl }}">
-  </figure>
+<div class="review-kit photo-lightbox" data-lightbox-gallery=".review-kit-main img, .review-kit-thumb img" data-lightbox-triggers=".review-kit-main img" data-lightbox-index="0">
+  <div class="review-kit-main">
+    {{ range first 1 $imgs }}
+    {{ $fullUrl := printf "%s/%s/01_kit/%s" $imgBase $productPath . }}
+    <figure>
+      <img src="{{ $fullUrl }}" alt="" loading="lazy" decoding="async" data-full="{{ $fullUrl }}">
+    </figure>
+    {{ end }}
+  </div>
+  {{ $thumbs := after 1 $imgs }}
+  {{ if gt (len $thumbs) 0 }}
+  <div class="review-kit-strip-wrap">
+    <button type="button" class="review-kit-arrow review-kit-arrow--prev" aria-label="Previous photos" disabled>&lsaquo;</button>
+    <div class="review-kit-fade review-kit-fade--left" aria-hidden="true"></div>
+    <div class="review-kit-fade review-kit-fade--right" aria-hidden="true"></div>
+    <div class="review-kit-strip" aria-label="More kit photos">
+      {{ range $thumbs }}
+      {{ $fullUrl := printf "%s/%s/01_kit/%s" $imgBase $productPath . }}
+      <figure class="review-kit-thumb" data-full="{{ $fullUrl }}">
+        <img src="{{ $fullUrl }}" alt="" loading="lazy" decoding="async" data-full="{{ $fullUrl }}">
+      </figure>
+      {{ end }}
+    </div>
+    <button type="button" class="review-kit-arrow review-kit-arrow--next" aria-label="Next photos">&rsaquo;</button>
+  </div>
+  <script>
+  (function(){
+    var wrap=document.currentScript.previousElementSibling;
+    if(!wrap||!wrap.classList.contains("review-kit-strip-wrap"))return;
+    var strip=wrap.querySelector(".review-kit-strip");
+    var prevBtn=wrap.querySelector(".review-kit-arrow--prev");
+    var nextBtn=wrap.querySelector(".review-kit-arrow--next");
+    var fadeL=wrap.querySelector(".review-kit-fade--left");
+    var fadeR=wrap.querySelector(".review-kit-fade--right");
+    var kit=wrap.closest(".review-kit");
+    var mainImg=kit&&kit.querySelector(".review-kit-main figure:first-child img");
+    var thumbs=strip?strip.querySelectorAll(".review-kit-thumb"):[];
+    var step=2;
+    function updateUI(){
+      if(!strip)return;
+      var atStart=strip.scrollLeft<=1;
+      var atEnd=strip.scrollLeft>=strip.scrollWidth-strip.clientWidth-1;
+      if(prevBtn){ prevBtn.disabled=atStart; }
+      if(nextBtn){ nextBtn.disabled=atEnd; }
+      if(fadeL){ fadeL.classList.toggle("is-hidden",atStart); }
+      if(fadeR){ fadeR.classList.toggle("is-hidden",atEnd); }
+    }
+    function setActive(idx){
+      thumbs.forEach(function(t,i){ t.classList.toggle("is-active",i===idx); });
+    }
+    function scrollBy(n){
+      if(!strip)return;
+      var fig=strip.querySelector(".review-kit-thumb");
+      var gap=12;
+      var w=fig?(fig.offsetWidth+gap):0;
+      if(w<=0)return;
+      strip.scrollBy({left:n*w,behavior:"smooth"});
+    }
+    if(prevBtn){ prevBtn.addEventListener("click",function(){ scrollBy(-step); }); }
+    if(nextBtn){ nextBtn.addEventListener("click",function(){ scrollBy(step); }); }
+    if(strip){ strip.addEventListener("scroll",updateUI); }
+    thumbs.forEach(function(t,i){
+      t.addEventListener("click",function(e){
+        e.stopPropagation();
+        var url=t.dataset.full||(t.querySelector("img")&&t.querySelector("img").dataset.full);
+        if(url&&mainImg){
+          mainImg.src=url;
+          mainImg.dataset.full=url;
+          if(kit){ kit.setAttribute("data-lightbox-index", String(i + 1)); }
+        }
+        setActive(i);
+      });
+    });
+    updateUI();
+    window.requestAnimationFrame(updateUI);
+    window.addEventListener("load",updateUI,{once:true});
+    window.addEventListener("resize",updateUI);
+  })();
+  </script>
   {{ end }}
 </div>
 {{ end }}

@@ -7,8 +7,15 @@ brand_slug: "samsung"
 model_slug: "t7"
 capacity_slug: "1tb"
 kitImages:
+  - "back.webp"
+  - "back2.webp"
   - "bottom.webp"
   - "cables.webp"
+  - "front.webp"
+  - "front2.webp"
+  - "stend.webp"
+  - "top.webp"
+  - "valume.webp"
 ---
 
 | Spec | Value |
@@ -54,15 +61,11 @@ We also publish the median maximum case temperature for this workload as a separ
 
 A practical note: if you usually copy around 200 GiB, the calculator can estimate time from our measurements and compare it with other tested models for the same data size.
 
----
-
 ## Sequential Read (250 GiB)
 
 Sequential read represents copying a large file *from* the drive back to the computer. The main things to watch are throughput and stability—no unexpected drops mid-transfer.
 
 In our test, T7 read behavior is stable and predictable for large-file copies. The maximum case temperature for this workload is recorded and published in layer 1.
-
----
 
 ## Random Read 4K QD1
 
@@ -75,7 +78,6 @@ Real-life examples include opening a folder with thousands of files, searching i
 
 For this scenario as well, we publish the median maximum case temperature in Raw Data.
 
----
 
 ## Summary and comparison
 

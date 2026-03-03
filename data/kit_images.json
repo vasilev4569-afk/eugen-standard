@@ -1,6 +1,13 @@
 {
   "external-ssd/samsung/t7/1tb": [
+    "back.webp",
+    "back2.webp",
     "bottom.webp",
-    "cables.webp"
+    "cables.webp",
+    "front.webp",
+    "front2.webp",
+    "stend.webp",
+    "top.webp",
+    "valume.webp"
   ]
 }

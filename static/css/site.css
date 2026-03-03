@@ -302,6 +302,40 @@ p{ margin:0 0 12px; }
 .review-page .review-content :first-child{ margin-top:0; }
 .review-page .review-content table{ width:auto; min-width:0; max-width:100%; }
 
+/* Review readability: each H2 section as a card */
+.section-card{
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:#fff;
+  margin:18px 0;
+  overflow:hidden;
+}
+.section-card-head{
+  background:#fafbfc;
+  border-bottom:1px solid var(--border);
+  padding:14px 16px;
+}
+.section-card-head > h2{
+  margin:0;
+}
+.section-card-body{
+  background:#fff;
+  padding:14px 16px;
+}
+.section-card-body > :first-child{
+  margin-top:0;
+}
+.section-card-body > :last-child{
+  margin-bottom:0;
+}
+.section-card .chart{
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:#fafbfc;
+  padding:10px;
+  margin-top:10px;
+}
+
 /* Review hero: photo (left) + specs card (right) */
 .review-hero-grid{
   display:grid;
@@ -335,30 +369,136 @@ p{ margin:0 0 12px; }
   .review-hero-grid .intro-photo{ min-height:320px; }
 }
 
-/* Review kit photos (01_kit) — 2 per row, 434px (432px content after 1px border) */
+/* Review kit photos (01_kit): 1 large + thumbnail strip */
 .review-kit{
-  display:grid;
-  grid-template-columns:repeat(2, 1fr);
-  grid-auto-rows:minmax(0, 1fr);
-  gap:16px;
   margin:24px 0;
-  height:434px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
 }
-.review-kit figure{
+.review-kit-main{
+  display:block;
+  width:100%;
+}
+.review-kit-main figure{
   margin:0;
-  min-height:0;
   border:1px solid var(--border);
   border-radius:var(--radius);
   overflow:hidden;
   background:var(--soft);
+  height:434px;
 }
-.review-kit img{
+.review-kit-main img{
   width:100%;
   height:100%;
   display:block;
   object-fit:contain;
 }
-.review-kit figcaption{ padding:8px 12px; font-size:13px; color:var(--muted); }
+/* Thumbnail strip: wrapper with arrows + fade */
+.review-kit-strip-wrap{
+  position:relative;
+  width:100%;
+  margin-top:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.review-kit-strip{
+  display:flex;
+  justify-content:flex-start;
+  gap:12px;
+  width:100%;
+  overflow-x:auto;
+  overscroll-behavior-x:contain;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+  padding:8px 42px;
+  scroll-behavior:smooth;
+}
+.review-kit-strip::-webkit-scrollbar{ display:none; }
+.review-kit-strip figure{
+  flex:0 0 auto;
+  width:180px;
+  height:120px;
+  margin:0;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  background:var(--soft);
+  cursor:pointer;
+  transition:border-color .15s, transform .15s, box-shadow .15s;
+}
+.review-kit-strip figure:hover{
+  border-color:var(--border-hover);
+}
+.review-kit-strip figure.is-active{
+  border-color:var(--accent);
+  box-shadow:0 0 0 1px var(--accent);
+  transform:scale(1.02);
+}
+.review-kit-strip img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:contain;
+}
+/* Arrows */
+.review-kit-arrow{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:2;
+  width:32px;
+  height:32px;
+  padding:0;
+  border:1px solid var(--border);
+  border-radius:50%;
+  background:rgba(255,255,255,.9);
+  color:var(--text);
+  font-size:18px;
+  line-height:1;
+  cursor:pointer;
+  flex-shrink:0;
+  transition:opacity .15s, border-color .15s;
+}
+.review-kit-arrow:hover:not(:disabled){
+  border-color:var(--border-hover);
+}
+.review-kit-arrow:disabled{
+  opacity:.35;
+  cursor:default;
+  pointer-events:none;
+}
+.review-kit-arrow--prev{ left:4px; }
+.review-kit-arrow--next{ right:4px; }
+/* Fade overlays */
+.review-kit-fade{
+  position:absolute;
+  top:0;
+  bottom:0;
+  width:48px;
+  z-index:1;
+  pointer-events:none;
+  transition:opacity .2s;
+}
+.review-kit-fade.is-hidden{ opacity:0; }
+.review-kit-fade--left{
+  left:0;
+  background:linear-gradient(to right, rgba(255,255,255,.85), transparent);
+}
+.review-kit-fade--right{
+  right:0;
+  background:linear-gradient(to left, rgba(255,255,255,.85), transparent);
+}
+
+@media (max-width: 900px){
+  .review-kit-main figure{
+    height:320px;
+  }
+  .review-kit-strip{
+    padding:8px 36px;
+  }
+}
 
 /* Photo lightbox (review, best) — click to enlarge */
 .photo-lightbox figure{ cursor:pointer; }
