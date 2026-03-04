@@ -123,11 +123,9 @@
     </div>
   </header>
 
-  <section class="content">
+  <section class="content review-content data-content">
 
     {{ if $hasMeta }}
-
-      <h2>{{ i18n "data_test_unit_env" }}</h2>
 
       {{/* Translate meta labels: <th data-meta="x"></th> → <th>i18n</th> */}}
       {{ $mt := $metaTable }}
@@ -143,30 +141,37 @@
         {{ end }}
       {{ end }}
 
-      <div class="testunit-grid{{ if not $photoURL }} testunit-grid-no-photo{{ end }}">
-        {{ if $photoURL }}
-        <div class="testunit-left">
-          <figure class="testunit-photo">
-            <img
-              class="testunit-photo-img"
-              src="{{ $photoURL }}"
-              onerror="this.closest('.testunit-left').style.display='none';"
-              alt="{{ i18n "data_test_unit_photo" }}"
-              loading="lazy"
-              decoding="async">
-          </figure>
+      <section class="section-card data-section-card">
+        <div class="section-card-head">
+          <h2>{{ i18n "data_test_unit_env" }}</h2>
         </div>
-        {{ end }}
-
-        <div class="testunit-right">
-          <div class="testunit-spec-card">
-            {{ $mt | safeHTML }}
-            {{ with .Params.testunit_note }}
-              <p class="testunit-note">{{ . }}</p>
+        <div class="section-card-body">
+          <div class="testunit-grid{{ if not $photoURL }} testunit-grid-no-photo{{ end }}">
+            {{ if $photoURL }}
+            <div class="testunit-left">
+              <figure class="testunit-photo">
+                <img
+                  class="testunit-photo-img"
+                  src="{{ $photoURL }}"
+                  onerror="this.closest('.testunit-left').style.display='none';"
+                  alt="{{ i18n "data_test_unit_photo" }}"
+                  loading="lazy"
+                  decoding="async">
+              </figure>
+            </div>
             {{ end }}
+
+            <div class="testunit-right">
+              <div class="testunit-spec-card">
+                {{ $mt | safeHTML }}
+                {{ with .Params.testunit_note }}
+                  <p class="testunit-note">{{ . }}</p>
+                {{ end }}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {{/* Find all data tables */}}
       {{ $tables := findRE `(?s)<table class="data-table"[^>]*data-test="[^"]+"[^>]*>.*?</table>` $rest 999 }}
@@ -180,10 +185,6 @@
           {{ $key := "" }}
           {{ if gt (len $m) 0 }}
             {{ $key = replaceRE `^data-test="([^"]+)".*$` `$1` (index $m 0) }}
-          {{ end }}
-
-          {{ if $key }}
-            <h2>{{ i18n (printf "data_section_%s" $key) }}</h2>
           {{ end }}
 
           {{/* Translate column headers: <th data-col="x"></th> */}}
@@ -212,7 +213,16 @@
             {{ end }}
           {{ end }}
 
-          {{ $t | safeHTML }}
+          <section class="section-card data-section-card">
+            {{ if $key }}
+              <div class="section-card-head">
+                <h2>{{ i18n (printf "data_section_%s" $key) }}</h2>
+              </div>
+            {{ end }}
+            <div class="section-card-body">
+              {{ $t | safeHTML }}
+            </div>
+          </section>
         {{ end }}
       {{ else }}
         {{ $rest | safeHTML }}

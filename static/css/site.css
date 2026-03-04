@@ -14,9 +14,17 @@
   --table-zebra:#fcfcfd;
   --table-hover:#fcfcfc;
   --border-hover:#d6d6d6;
+  --card-bg:#ffffff;
+  --card-border:#e5e7eb;
+  --card-radius:14px;
+  --section-head-bg:#f6f8fb;
+  --section-head-border:#d9dde5;
+  --table-cell-px:14px;
+  --table-cell-py:12px;
 
   /* subtle technical accent */
   --accent:#0f172a;
+  --text-flow-max:860px;
 }
 
 *{ box-sizing:border-box; }
@@ -56,7 +64,7 @@ a:hover{ text-decoration:underline; }
   padding:18px 0 56px; /* Step 1: tighter top spacing */
 }
 
-.small{ font-size:13px; }
+.small{ font-size:14px; }
 .muted{ color:var(--muted); }
 
 /* ===== Header / Nav ===== */
@@ -112,7 +120,7 @@ a:hover{ text-decoration:underline; }
 }
 
 .brand-tagline{
-  font-size:12px;
+  font-size:14px;
   color:var(--muted);
 }
 
@@ -183,7 +191,7 @@ a:hover{ text-decoration:underline; }
 
 .footer-tagline{
   margin-top:6px;
-  font-size:13px;
+  font-size:14px;
   color:var(--muted);
   line-height:1.45;
 }
@@ -222,12 +230,12 @@ a:hover{ text-decoration:underline; }
 }
 
 .footer-copy{
-  font-size:13px;
+  font-size:14px;
   color:var(--muted);
 }
 
 .footer-meta{
-  font-size:12px;
+  font-size:14px;
   line-height:1.35;
   text-align:right;
   color:var(--muted);
@@ -307,18 +315,18 @@ p{ margin:0 0 12px; }
 
 /* Review readability: each H2 section as a card */
 .section-card{
-  border:1px solid var(--border);
-  border-radius:14px;
-  background:#fff;
+  border:1px solid var(--card-border);
+  border-radius:var(--card-radius);
+  background:var(--card-bg);
   margin:18px 0;
   overflow:hidden;
 }
 .section-card-head{
-  background:#f6f8fb;
-  border-bottom:1px solid #d9dde5;
+  background:var(--section-head-bg);
+  border-bottom:1px solid var(--section-head-border);
   padding:14px 16px;
 }
-.section-card-head > h2{
+.section-card-head > :is(h2, h3){
   margin:0;
   font-size:21px;
   font-weight:700;
@@ -326,7 +334,7 @@ p{ margin:0 0 12px; }
 .section-card-body{
   background:#fff;
   font-size:17px;
-  padding:14px 16px;
+  padding:14px 32px;
 }
 .section-card-body > :first-child{
   margin-top:0;
@@ -396,7 +404,7 @@ p{ margin:0 0 12px; }
 }
 .review-note{
   margin:8px 0 0;
-  font-size:12px;
+  font-size:14px;
   line-height:1.35;
   color:var(--muted);
 }
@@ -451,7 +459,7 @@ p{ margin:0 0 12px; }
 .chart-caption{
   margin:0 0 8px;
   padding-top:0;
-  font-size:13px;
+  font-size:14px;
   line-height:1.3;
   color:#4b5563;
 }
@@ -632,7 +640,7 @@ pre{
 pre code{
   display:block;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size:12px;
+  font-size:14px;
   line-height:1.45;
   white-space:inherit;
   background:transparent;
@@ -678,9 +686,9 @@ code{
 
 /* ===== Data page intro (row of buttons + caption below) ===== */
 .data-intro-desc{
-  font-size:12px;
+  font-size:14px;
   color:var(--muted);
-  line-height:1.4;
+  line-height:1.35;
 }
 .data-intro-actions{
   display:flex;
@@ -690,7 +698,7 @@ code{
 }
 .data-intro-actions .data-intro-desc{
   position:absolute;
-  top:calc(100% + 4px);
+  top:calc(100% + 1px);
   right:8px;
   white-space:nowrap;
 }
@@ -759,9 +767,12 @@ code{
   margin:6px 0 8px;
   padding:0;
   border:0;
-  font-size:12px;
+  font-size:14px;
   line-height:1.35;
   color:var(--muted);
+}
+.data-page .data-content > p{
+  font-size:17px;
 }
 .data-page .content blockquote p,
 .review-page .review-content blockquote p{
@@ -814,6 +825,34 @@ th, td{
   text-align:left;
   vertical-align:top;
 }
+.data-page .meta-table th, .data-page .meta-table td,
+.data-page .data-table th, .data-page .data-table td{
+  font-size:16px;
+}
+.data-page .data-table th, .data-page .data-table td{
+  padding:var(--table-cell-py) var(--table-cell-px);
+  border-color:#e6eaf0;
+}
+.data-page .data-table{
+  border-collapse:separate;
+  border-spacing:0;
+  border:1px solid #e6eaf0;
+  border-radius:12px;
+  overflow:hidden;
+}
+.data-page .data-table th,
+.data-page .data-table td{
+  border-left:0;
+  border-right:0;
+  border-top:0;
+  border-bottom:1px solid #e8edf3;
+}
+.data-page .data-table thead th{
+  background:#f7f9fc;
+}
+.data-page .data-table tbody tr:last-child td{
+  border-bottom:0;
+}
 
 .meta-table th, .data-table th{
   background:var(--soft);
@@ -839,14 +878,23 @@ th, td{
 /* other columns */
 .data-table td:not(:first-child),
 .data-table th:not(:first-child){
-  text-align:center;
+  text-align:right;
   font-variant-numeric: tabular-nums;
 }
 
 /* Step 2: highlight Average (Median) column (2nd) */
 .data-table th:nth-child(2),
 .data-table td:nth-child(2){
-  font-weight:700;
+  background:#f7f9fc;
+  font-weight:600;
+  color:#111827;
+}
+.data-table th:nth-child(n+3),
+.data-table td:nth-child(n+3){
+  color:#4b5563;
+}
+.data-table tbody td:nth-child(n+3){
+  background:#fcfdff;
 }
 
 /* subtle zebra for readability */
@@ -865,6 +913,77 @@ th, td{
 .kpi{ font-weight:700; }
 
 /* =========================================================
+   RAW DATA tables (universal highlight style)
+   Applies by page/context, not only by class names.
+   ========================================================= */
+.data-page .data-content .data-section-card .section-card-body > :is(table, .data-table){
+  width:100%;
+  margin-top:12px;
+  border-collapse:separate;
+  border-spacing:0;
+  border:1px solid #e3e8ef;
+  border-radius:12px;
+  overflow:hidden;
+  background:#fff;
+}
+.data-page .data-content .data-section-card .section-card-body > :is(table, .data-table) thead th{
+  font-size:16px;
+  font-weight:500;
+  color:#4b5563;
+  text-transform:none;
+  background:#f8fafc;
+  border-bottom:1px solid #e6ebf2;
+  padding:10px 12px;
+}
+.data-page .data-content .data-section-card .section-card-body > :is(table, .data-table) tbody td{
+  font-size:16px;
+  padding:10px 12px;
+  border-bottom:1px solid #edf1f6;
+  background:#fff;
+}
+.data-page .data-content .data-section-card .section-card-body > :is(table, .data-table) tbody tr:last-child td{
+  border-bottom:0;
+}
+.data-page .data-content .data-section-card .section-card-body > :is(table, .data-table) th,
+.data-page .data-content .data-section-card .section-card-body > :is(table, .data-table) td{
+  border-left:0;
+  border-right:0;
+  border-top:0;
+  vertical-align:top;
+}
+.data-page .data-content .data-section-card .section-card-body > :is(table, .data-table) :is(th, td):not(:first-child){
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+.data-page .data-content .data-section-card .section-card-body > :is(table, .data-table) :is(thead th, tbody td):nth-child(2){
+  background:rgba(59, 130, 246, 0.07);
+}
+.data-page .data-content .data-section-card .section-card-body > :is(table, .data-table) thead th:nth-child(2){
+  color:#374151;
+  font-weight:600;
+}
+.data-page .data-content .data-section-card .section-card-body > :is(table, .data-table) tbody td:nth-child(2){
+  color:#111111;
+  font-weight:700;
+}
+.data-page .data-content .data-section-card .section-card-body > :is(table, .data-table) :is(th, td):nth-child(n+3){
+  color:#374151;
+  font-weight:500;
+  background:#fff;
+}
+.data-page .data-content .data-section-card .section-card-body > :is(table, .data-table) :is(th, td):nth-child(n+4){
+  border-left:1px solid #eef2f7;
+}
+@media (hover:hover){
+  .data-page .data-content .data-section-card .section-card-body > :is(table, .data-table) tbody tr:hover td{
+    background:#fafcff;
+  }
+  .data-page .data-content .data-section-card .section-card-body > :is(table, .data-table) tbody tr:hover td:nth-child(2){
+    background:rgba(59, 130, 246, 0.09);
+  }
+}
+
+/* =========================================================
    Test unit grid (table left + photo right)
    ========================================================= */
 
@@ -872,8 +991,8 @@ th, td{
   display:grid;
   grid-template-columns: 1fr 1fr;
   gap:24px;
-  align-items:start;
-  margin:16px 0 22px;
+  align-items:stretch;
+  margin:16px 0 20px;
 }
 .testunit-grid-no-photo{
   grid-template-columns: 1fr;
@@ -882,6 +1001,7 @@ th, td{
 .testunit-left,
 .testunit-right{
   display:flex;
+  height:100%;
 }
 
 .testunit-spec-card{
@@ -889,6 +1009,14 @@ th, td{
   width:100%;
   display:flex;
   flex-direction:column;
+}
+.data-page .testunit-grid .meta-table{
+  height:100%;
+}
+.data-page .testunit-grid .meta-table th,
+.data-page .testunit-grid .meta-table td{
+  padding:12px 12px;
+  line-height:1.4;
 }
 
 .testunit-table-wrap .meta-table{
@@ -925,7 +1053,7 @@ th, td{
   margin:0;
   width:100%;
   height:100%;
-  min-height:314px;
+  min-height:434px;
   border:1px solid var(--border);
   border-radius:var(--radius);
   background:transparent;
@@ -938,9 +1066,12 @@ th, td{
 
 .testunit-note{
   margin:8px 0 0;
-  font-size:12px;
+  font-size:14px;
   line-height:1.35;
   color:var(--muted);
+}
+.data-page .data-content{
+  margin-top:20px;
 }
 
 .testunit-photo-img{
@@ -958,7 +1089,7 @@ th, td{
 
 .breadcrumbs{
   margin: 6px 0 12px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted);
 }
 
@@ -1072,13 +1203,13 @@ th, td{
 
 .card-sub{
   margin:0 0 10px;
-  font-size:13px;
+  font-size:14px;
 }
 
 .card-link{
   display:inline-block;
   margin-top:10px;
-  font-size:13px;
+  font-size:14px;
   color:var(--muted);
   text-decoration:none;
 }
@@ -1095,7 +1226,7 @@ th, td{
 
 .pill{
   display:inline-block;
-  font-size:11px;
+  font-size:14px;
   padding:2px 8px;
   border-radius:999px;
   border:1px solid var(--border);
@@ -1124,7 +1255,7 @@ th, td{
 @media (max-width: 1100px){
   .testunit-grid{ grid-template-columns: 1fr; }
   .testunit-grid .testunit-left .meta-table tr{ height:auto; }
-  .testunit-photo{ height:260px; }
+  .testunit-photo{ min-height:320px; height:auto; }
 }
 
 @media (max-width: 900px){
@@ -1264,7 +1395,7 @@ th, td{
   border-color:var(--border);
 }
 
-.lang-caret{ font-size:12px; opacity:.8; }
+.lang-caret{ font-size:14px; opacity:.8; }
 
 .lang-menu{
   position:absolute;
@@ -1285,7 +1416,7 @@ th, td{
   border-radius:10px;
   color:var(--muted);
   text-decoration:none;
-  font-size:13px;
+  font-size:14px;
 }
 
 .lang-item:hover{
@@ -1347,7 +1478,7 @@ th, td{
   .calc-controls{ grid-template-columns:1fr; }
 }
 
-.calc-label{ display:block; font-size:13px; color:#374151; margin-bottom:6px; }
+.calc-label{ display:block; font-size:14px; color:#374151; margin-bottom:6px; }
 .calc-sizeRow{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
 .calc-number{
   max-width:120px;
@@ -1358,7 +1489,7 @@ th, td{
   font-size:14px;
 }
 .calc-range{ flex:1; min-width:240px; }
-.calc-muted{ color:var(--muted); font-size:13px; line-height:1.35; }
+.calc-muted{ color:var(--muted); font-size:14px; line-height:1.35; }
 .calc-tabnums{ font-variant-numeric: tabular-nums; font-feature-settings:"tnum" 1,"lnum" 1; }
 
 .calc-right{ display:grid; gap:10px; }
@@ -1425,7 +1556,7 @@ th, td{
   background:var(--bg);
   z-index:1;
   text-align:left;
-  font-size:12px;
+  font-size:14px;
   color:#374151;
   border-bottom:1px solid var(--border);
   padding:10px 12px;
